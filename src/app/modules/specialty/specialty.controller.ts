@@ -1,27 +1,36 @@
 import { Request, Response } from "express";
 import { SpecialtyService } from "./specialty.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { sendResponse } from "../../utils/sendResponse";
 
 const createSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const payload = req.body;
 
   const result = await SpecialtyService.createSpecialty(payload);
 
-  res.status(201).json({
-    success: true,
-    message: "Specialty created successfully",
-    data: result,
-  });
+  sendResponse(
+    {
+      statusCode: 201,
+      success: true,
+      message: "Specialty created successfully",
+      data: result,
+    },
+    res,
+  );
 });
 
 const getAllSpecialties = asyncHandler(async (req: Request, res: Response) => {
   const result = await SpecialtyService.getAllSpecialties();
 
-  res.status(200).json({
-    success: true,
-    message: "Specialties retrieved successfully",
-    data: result,
-  });
+  sendResponse(
+    {
+      statusCode: 200,
+      success: true,
+      message: "Specialties retrieved successfully",
+      data: result,
+    },
+    res,
+  );
 });
 
 const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
@@ -30,22 +39,30 @@ const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
 
   const result = await SpecialtyService.updateSpecialty(id as string, payload);
 
-  res.status(200).json({
-    success: true,
-    message: "Specialty updated successfully",
-    data: result,
-  });
+  sendResponse(
+    {
+      statusCode: 200,
+      success: true,
+      message: "Specialty updated successfully",
+      data: result,
+    },
+    res,
+  );
 });
 
 const deleteSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await SpecialtyService.deleteSpecialty(id as string);
 
-  res.status(200).json({
-    success: true,
-    message: "Specialty deleted successfully",
-    data: result,
-  });
+  sendResponse(
+    {
+      statusCode: 200,
+      success: true,
+      message: "Specialty deleted successfully",
+      data: result,
+    },
+    res,
+  );
 });
 
 export const SpecialtyController = {
