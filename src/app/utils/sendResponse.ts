@@ -9,7 +9,8 @@ interface IResponseData<T> {
 
 export const sendResponse = <T>(resData: IResponseData<T>, res: Response) => {
   const { statusCode, success, message, data } = resData;
-  return res.status(statusCode).json({
+
+  res.status(statusCode).json({
     success: success,
     message: message || "Request successful",
     data: data,
