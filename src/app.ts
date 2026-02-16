@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import { prisma } from "./app/lib/prisma";
+import { IndexRouter } from "./app/routers";
 
 const app: Application = express();
 
@@ -9,18 +10,14 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Router
+app.use("/api/v1", IndexRouter);
+
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
-  const specialty = await prisma.specialty.create({
-    data: {
-      title: "Cardiology",
-    },
-  });
-
-  res.status(201).json({
+  res.status(200).json({
     success: true,
-    message: "Specialty created successfully",
-    data: specialty,
+    message: "Welcome to MediLink Server",
   });
 });
 
