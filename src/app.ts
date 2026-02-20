@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from "express";
-import { prisma } from "./app/lib/prisma";
 import { IndexRouter } from "./app/routers";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 
