@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import { IndexRouter } from "./app/routers";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
+import notFound from "./app/middlewares/notFound";
 
 const app: Application = express();
 
@@ -23,5 +24,7 @@ app.get("/", async (req: Request, res: Response) => {
 
 // Global error handler
 app.use(globalErrorHandler);
+// Not found route handler
+app.use(notFound);
 
 export default app;

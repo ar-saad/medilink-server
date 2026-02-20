@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from "express";
+import { env } from "../../config/env";
+import status from "http-status";
 
 export const globalErrorHandler = (
   err: any,
@@ -6,9 +8,16 @@ export const globalErrorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
-  console.error(err);
-  res.status(500).json({
+  if (env.NODE_ENV === "development") {
+    console.error("Global Error Handler:", err);
+  }
+
+  let statusCode: number = status.INTERNAL_SERVER_ERROR;
+  let message: string = "Internal server error";
+
+  res.status(statusCode).json({
     success: false,
-    message: err.message || "Internal server error",
+    message: message,
+    error: err.message,
   });
 };

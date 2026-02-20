@@ -1,3 +1,4 @@
+import status from "http-status";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
@@ -13,7 +14,7 @@ const registerPatient = asyncHandler(async (req, res) => {
 
   sendResponse(
     {
-      statusCode: 201,
+      statusCode: status.CREATED,
       success: true,
       message: "Patient registered successfully",
       data: result,
@@ -32,7 +33,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   sendResponse(
     {
-      statusCode: 200,
+      statusCode: status.OK,
       success: true,
       message: "User logged in successfully",
       data: result,
