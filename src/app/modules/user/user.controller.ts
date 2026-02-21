@@ -9,15 +9,12 @@ const createDoctor = asyncHandler(async (req: Request, res: Response) => {
 
   const result = await UserService.createDoctor(payload);
 
-  sendResponse(
-    {
-      statusCode: status.CREATED,
-      success: true,
-      message: "Doctor created successfully",
-      data: result,
-    },
-    res,
-  );
+  sendResponse(res, {
+    statusCode: status.CREATED,
+    success: true,
+    message: "Doctor created successfully",
+    data: result,
+  });
 });
 
 export const UserController = {

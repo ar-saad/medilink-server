@@ -12,15 +12,12 @@ const registerPatient = asyncHandler(async (req, res) => {
     password,
   });
 
-  sendResponse(
-    {
-      statusCode: status.CREATED,
-      success: true,
-      message: "Patient registered successfully",
-      data: result,
-    },
-    res,
-  );
+  sendResponse(res, {
+    statusCode: status.CREATED,
+    success: true,
+    message: "Patient registered successfully",
+    data: result,
+  });
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -31,15 +28,12 @@ const loginUser = asyncHandler(async (req, res) => {
     password,
   });
 
-  sendResponse(
-    {
-      statusCode: status.OK,
-      success: true,
-      message: "User logged in successfully",
-      data: result,
-    },
-    res,
-  );
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User logged in successfully",
+    data: result,
+  });
 });
 
 export const AuthController = {
