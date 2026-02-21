@@ -1,13 +1,7 @@
 import { Response } from "express";
+import { TResponse } from "../types/response.type";
 
-interface IResponseData<T> {
-  statusCode: number;
-  success: boolean;
-  message: string;
-  data?: T;
-}
-
-export const sendResponse = <T>(res: Response, resData: IResponseData<T>) => {
+export const sendResponse = <T>(res: Response, resData: TResponse<T>) => {
   const { statusCode, success, message, data } = resData;
 
   res.status(statusCode).json({
