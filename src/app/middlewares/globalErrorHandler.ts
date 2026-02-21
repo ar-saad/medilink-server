@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { env } from "../../config/env";
+import { env } from "../config/env";
 import status from "http-status";
 
 export const globalErrorHandler = (

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { DoctorService } from "./doctor.service";
+import { TUpdateDoctorPayload } from "./doctor.types";
 
 const getAllDoctors = asyncHandler(async (req: Request, res: Response) => {
   const doctors = await DoctorService.getAllDoctors();
@@ -28,7 +29,7 @@ const getDoctorById = asyncHandler(async (req: Request, res: Response) => {
 
 const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const payload = req.body;
+  const payload = req.body as TUpdateDoctorPayload;
 
   const updatedDoctor = await DoctorService.updateDoctor(id as string, payload);
 

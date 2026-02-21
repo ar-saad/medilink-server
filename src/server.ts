@@ -1,5 +1,5 @@
 import app from "./app";
-import { env } from "./config/env";
+import { env } from "./app/config/env";
 
 const bootstrap = async () => {
   try {

@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { IUpdateDoctorPayload } from "./doctor.interface";
+import { TUpdateDoctorPayload } from "./doctor.types";
 
 const getAllDoctors = async () => {
   return await prisma.doctor.findMany({
@@ -28,7 +28,7 @@ const getDoctorById = async (id: string) => {
   });
 };
 
-const updateDoctor = async (id: string, data: IUpdateDoctorPayload) => {
+const updateDoctor = async (id: string, data: TUpdateDoctorPayload) => {
   return await prisma.doctor.update({
     where: { id },
     data,
@@ -36,8 +36,10 @@ const updateDoctor = async (id: string, data: IUpdateDoctorPayload) => {
 };
 
 const deleteDoctor = async (id: string) => {
-  return await prisma.doctor.delete({
+  // Soft delete
+  return await prisma.doctor.update({
     where: { id },
+    data: { isDeleted: true, deletedAt: new Date() },
   });
 };
 
