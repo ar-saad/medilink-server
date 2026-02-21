@@ -9,4 +9,5 @@ export type TErrorResponse = {
   message: string;
   errorSources?: TErrorSources[];
   error?: any;
+  stack?: string;
 };

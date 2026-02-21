@@ -1,4 +1,5 @@
 import { Specialty, UserRole } from "../../../generated/prisma/client";
+import { BadRequestError, NotFoundError } from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { TCreateDoctorPayload } from "./user.types";
@@ -13,7 +14,7 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
       },
     });
     if (!specialtyRecord) {
-      throw new Error(`Specialty with ID ${specialtyId} not found`);
+      throw new NotFoundError(`Specialty with ID ${specialtyId} not found`);
     }
     specialties.push(specialtyRecord);
   }
@@ -25,7 +26,7 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
   });
 
   if (userExists) {
-    throw new Error("Doctor with this email already exists");
+    throw new BadRequestError("Doctor with this email already exists");
   }
 
   const userData = await auth.api.signUpEmail({
@@ -39,7 +40,7 @@ const createDoctor = async (payload: TCreateDoctorPayload) => {
   });
 
   if (!userData.user) {
-    throw new Error("Failed to register user");
+    throw new BadRequestError("Failed to register user");
   }
 
   try {
