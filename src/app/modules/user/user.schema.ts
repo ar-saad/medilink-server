@@ -20,8 +20,8 @@ export const createDoctorSchema = z.object({
       .nonnegative("Experience must be a non-negative number")
       .max(50, "Experience must be less than 50 years"),
     gender: z.enum(
-      [Gender.MALE, Gender.FEMALE],
-      "Gender must be either MALE or FEMALE",
+      [Gender.MALE, Gender.FEMALE, Gender.OTHER],
+      "Gender must be either MALE, FEMALE, or OTHER",
     ),
     appointmentFee: z
       .number()
@@ -53,8 +53,8 @@ export const createAdminSchema = z.object({
       .max(14, "Contact number must be less than 14 digits"),
     address: z.string().min(10, "Address must be at least 10 characters long"),
     gender: z.enum(
-      [Gender.MALE, Gender.FEMALE],
-      "Gender must be either MALE or FEMALE",
+      [Gender.MALE, Gender.FEMALE, Gender.OTHER],
+      "Gender must be either MALE, FEMALE, or OTHER",
     ),
   }),
 });
@@ -71,8 +71,8 @@ export const createSuperAdminSchema = z.object({
       .max(14, "Contact number must be less than 14 digits"),
     address: z.string().min(10, "Address must be at least 10 characters long"),
     gender: z.enum(
-      [Gender.MALE, Gender.FEMALE],
-      "Gender must be either MALE or FEMALE",
+      [Gender.MALE, Gender.FEMALE, Gender.OTHER],
+      "Gender must be either MALE, FEMALE, or OTHER",
     ),
   }),
 });

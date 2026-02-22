@@ -4,6 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import { DoctorService } from "./doctor.service";
 import { TUpdateDoctorPayload } from "./doctor.types";
 
+// GET | "/api/v1/doctors" | Get all doctors
 const getAllDoctors = asyncHandler(async (req: Request, res: Response) => {
   const doctors = await DoctorService.getAllDoctors();
 
@@ -15,6 +16,7 @@ const getAllDoctors = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// GET | "/api/v1/doctors/:id" | Get doctor by ID
 const getDoctorById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const doctor = await DoctorService.getDoctorById(id as string);
@@ -27,6 +29,7 @@ const getDoctorById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// PATCH | "/api/v1/doctors/:id" | Update doctor by ID
 const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body as TUpdateDoctorPayload;
@@ -41,6 +44,7 @@ const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// DELETE | "/api/v1/doctors/:id" | Soft delete doctor by ID
 const deleteDoctor = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 

@@ -21,8 +21,8 @@ export const updateDoctorSchema = z
       .nonnegative("Experience must be a non-negative number")
       .max(50, "Experience must be less than 50 years"),
     gender: z.enum(
-      [Gender.MALE, Gender.FEMALE],
-      "Gender must be either MALE or FEMALE",
+      [Gender.MALE, Gender.FEMALE, Gender.OTHER],
+      "Gender must be either MALE, FEMALE, or OTHER",
     ),
     appointmentFee: z
       .number("Appointment fee must be a number")
@@ -36,6 +36,7 @@ export const updateDoctorSchema = z
     designation: z
       .string("Designation must be a string")
       .min(5, "Designation must be at least 5 characters long"),
+    specialties: z.array(z.uuid("Specialty ID must be a valid UUID")),
   })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
