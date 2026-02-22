@@ -1,4 +1,12 @@
 import * as z from "zod";
-import { createDoctorSchema } from "./user.schema";
+import {
+  createAdminSchema,
+  createDoctorSchema,
+  createSuperAdminSchema,
+} from "./user.schema";
 
 export type TCreateDoctorPayload = z.infer<typeof createDoctorSchema>;
+
+export type TCreateAdminPayload = z.infer<typeof createAdminSchema>;
+
+export type TCreateSuperAdminPayload = z.infer<typeof createSuperAdminSchema>;
