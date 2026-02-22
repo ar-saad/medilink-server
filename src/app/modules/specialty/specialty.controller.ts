@@ -2,9 +2,13 @@ import { Request, Response } from "express";
 import { SpecialtyService } from "./specialty.service";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
+import {
+  TCreateSpecialtyPayload,
+  TUpdateSpecialtyPayload,
+} from "./specialty.types";
 
 const createSpecialty = asyncHandler(async (req: Request, res: Response) => {
-  const payload = req.body;
+  const payload = req.body as TCreateSpecialtyPayload;
 
   const result = await SpecialtyService.createSpecialty(payload);
 
@@ -29,7 +33,7 @@ const getAllSpecialties = asyncHandler(async (req: Request, res: Response) => {
 
 const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const payload = req.body;
+  const payload = req.body as TUpdateSpecialtyPayload;
 
   const result = await SpecialtyService.updateSpecialty(id as string, payload);
 
