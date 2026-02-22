@@ -9,11 +9,6 @@ export const updateAdminSchema = z
       .string()
       .min(11, "Contact number must be at least 11 digits")
       .max(14, "Contact number must be less than 14 digits"),
-    address: z.string().min(10, "Address must be at least 10 characters long"),
-    gender: z.enum(
-      [Gender.MALE, Gender.FEMALE, Gender.OTHER],
-      "Gender must be either MALE, FEMALE, or OTHER",
-    ),
   })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {

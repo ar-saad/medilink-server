@@ -53,6 +53,7 @@ const updateAdmin = async (id: string, payload: TUpdateAdminPayload) => {
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID
 const deleteAdmin = async (id: string) => {
   //TODO: Validate who is deleting the admin user. Only super admin can delete admin user and only super admin can delete super admin user but admin user cannot delete super admin user
+  //TODO: a super admin can not delete himself
 
   const isAdminExist = await prisma.admin.findUnique({
     where: {

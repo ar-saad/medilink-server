@@ -33,4 +33,4 @@ router.delete(
   AdminController.deleteAdmin,
 );
 
-export const AdminRoutes = router;
+export const AdminRouter = router;
