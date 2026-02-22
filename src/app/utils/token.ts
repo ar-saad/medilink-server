@@ -6,7 +6,7 @@ import { cookieUtils } from "./cookie";
 import ms, { StringValue } from "ms";
 
 // Create access token
-const getAccessToken = (payload: JwtPayload) => {
+const createAccessToken = (payload: JwtPayload) => {
   const accessToken = jwtUtils.createToken(
     payload,
     env.JWT_ACCESS_TOKEN_SECRET,
@@ -18,7 +18,7 @@ const getAccessToken = (payload: JwtPayload) => {
 };
 
 // Create refresh token
-const getRefreshToken = (payload: JwtPayload) => {
+const createRefreshToken = (payload: JwtPayload) => {
   const refreshToken = jwtUtils.createToken(
     payload,
     env.JWT_REFRESH_TOKEN_SECRET,
@@ -66,8 +66,8 @@ const setBetterAuthSessionCookie = (res: Response, token: string) => {
 };
 
 export const tokenUtils = {
-  getAccessToken,
-  getRefreshToken,
+  createAccessToken,
+  createRefreshToken,
   setAccessTokenCookie,
   setRefreshTokenCookie,
   setBetterAuthSessionCookie,

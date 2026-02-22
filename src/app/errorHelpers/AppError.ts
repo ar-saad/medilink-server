@@ -1,3 +1,5 @@
+import status from "http-status";
+
 export class AppError extends Error {
   public statusCode: number;
 
@@ -15,24 +17,24 @@ export class AppError extends Error {
 
 export class BadRequestError extends AppError {
   constructor(message: string) {
-    super(400, message);
+    super(status.BAD_REQUEST, message);
   }
 }
 
 export class UnauthorizedError extends AppError {
   constructor(message: string) {
-    super(401, message);
+    super(status.UNAUTHORIZED, message);
   }
 }
 
 export class ForbiddenError extends AppError {
   constructor(message: string) {
-    super(403, message);
+    super(status.FORBIDDEN, message);
   }
 }
 
 export class NotFoundError extends AppError {
   constructor(message: string) {
-    super(404, message);
+    super(status.NOT_FOUND, message);
   }
 }

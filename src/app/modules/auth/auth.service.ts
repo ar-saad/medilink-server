@@ -44,10 +44,10 @@ const registerPatient = async (payload: TRegisterPatientPayload) => {
     };
 
     // Generate access token
-    const accessToken = tokenUtils.getAccessToken(tokenCreationPayload);
+    const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
 
     // Generate refresh token
-    const refreshToken = tokenUtils.getRefreshToken(tokenCreationPayload);
+    const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
 
     return {
       ...data,
@@ -99,10 +99,10 @@ const loginUser = async (payload: TLoginUserPayload) => {
   };
 
   // Generate access token
-  const accessToken = tokenUtils.getAccessToken(tokenCreationPayload);
+  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
 
   // Generate refresh token
-  const refreshToken = tokenUtils.getRefreshToken(tokenCreationPayload);
+  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
 
   return { ...data, accessToken, refreshToken };
 };
