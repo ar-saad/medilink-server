@@ -2,19 +2,10 @@ import { UserStatus } from "../../../generated/prisma/enums";
 import { BadRequestError, ForbiddenError } from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
+import { tokenUtils } from "../../utils/token";
+import { TLoginUserPayload, TRegisterPatientPayload } from "./auth.types";
 
-interface IRegisterPatientPayload {
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface ILoginUserPayload {
-  email: string;
-  password: string;
-}
-
-const registerPatient = async (payload: IRegisterPatientPayload) => {
+const registerPatient = async (payload: TRegisterPatientPayload) => {
   const { name, email, password } = payload;
 
   const data = await auth.api.signUpEmail({
@@ -29,8 +20,8 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
     throw new BadRequestError("Failed to register user");
   }
 
-  const patient = await prisma.$transaction(async (tx) => {
-    try {
+  try {
+    const patient = await prisma.$transaction(async (tx) => {
       const patientTx = await tx.patient.create({
         data: {
           userId: data.user.id,
@@ -40,21 +31,42 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
       });
 
       return patientTx;
-    } catch (error) {
-      console.log("Transaction error: ", error);
-      await prisma.user.delete({
-        where: {
-          id: data.user.id,
-        },
-      });
-      throw error;
-    }
-  });
+    });
 
-  return { ...data, patient };
+    const tokenCreationPayload = {
+      userId: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      emailVerified: data.user.emailVerified,
+      role: data.user.role,
+      status: data.user.status,
+      isDeleted: data.user.isDeleted,
+    };
+
+    // Generate access token
+    const accessToken = tokenUtils.getAccessToken(tokenCreationPayload);
+
+    // Generate refresh token
+    const refreshToken = tokenUtils.getRefreshToken(tokenCreationPayload);
+
+    return {
+      ...data,
+      accessToken,
+      refreshToken,
+      patient,
+    };
+  } catch (error) {
+    console.log("Transaction error: ", error);
+    await prisma.user.delete({
+      where: {
+        id: data.user.id,
+      },
+    });
+    throw error;
+  }
 };
 
-const loginUser = async (payload: ILoginUserPayload) => {
+const loginUser = async (payload: TLoginUserPayload) => {
   const { email, password } = payload;
 
   const data = await auth.api.signInEmail({
@@ -76,7 +88,23 @@ const loginUser = async (payload: ILoginUserPayload) => {
     );
   }
 
-  return data;
+  const tokenCreationPayload = {
+    userId: data.user.id,
+    name: data.user.name,
+    email: data.user.email,
+    emailVerified: data.user.emailVerified,
+    role: data.user.role,
+    status: data.user.status,
+    isDeleted: data.user.isDeleted,
+  };
+
+  // Generate access token
+  const accessToken = tokenUtils.getAccessToken(tokenCreationPayload);
+
+  // Generate refresh token
+  const refreshToken = tokenUtils.getRefreshToken(tokenCreationPayload);
+
+  return { ...data, accessToken, refreshToken };
 };
 
 export const AuthService = {
