@@ -4,8 +4,6 @@ model SuperAdmin {
   email         String    @unique
   profilePhoto  String?
   contactNumber String?
-  address       String?
-  gender        Gender
   isDeleted     Boolean   @default(false)
   deletedAt     DateTime?
   createdAt     DateTime  @default(now())
@@ -17,5 +15,5 @@ model SuperAdmin {
 
   @@index([email], name: "idx_super_admin_email")
   @@index([isDeleted], name: "idx_super_admin_is_deleted")
-  @@map("super_admin")
+  @@map("super_admins")
 }

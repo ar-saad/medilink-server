@@ -1,10 +1,15 @@
-import { UserStatus } from "../../../generated/prisma/enums";
-import { BadRequestError, ForbiddenError } from "../../errorHelpers/AppError";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { tokenUtils } from "../../utils/token";
 import { TLoginUserPayload, TRegisterPatientPayload } from "./auth.types";
 
+// POST | "/api/v1/auth/register" | Register a new patient
 const registerPatient = async (payload: TRegisterPatientPayload) => {
   const { name, email, password } = payload;
 
@@ -66,6 +71,7 @@ const registerPatient = async (payload: TRegisterPatientPayload) => {
   }
 };
 
+// POST | "/api/v1/auth/login" | Login user
 const loginUser = async (payload: TLoginUserPayload) => {
   const { email, password } = payload;
 
@@ -107,7 +113,47 @@ const loginUser = async (payload: TLoginUserPayload) => {
   return { ...data, accessToken, refreshToken };
 };
 
+// GET | "/api/v1/auth/me" | Get current user details
+const getMe = async (user: {
+  userId: string;
+  role: UserRole;
+  email: string;
+}) => {
+  const result = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    include: {
+      patient: {
+        include: {
+          appointments: true,
+          reviews: true,
+          prescriptions: true,
+          medicalReports: true,
+          patientHealthData: true,
+        },
+      },
+      doctor: {
+        include: {
+          specialties: true,
+          appointments: true,
+          reviews: true,
+          prescriptions: true,
+        },
+      },
+      admin: true,
+    },
+  });
+
+  if (!result) {
+    throw new NotFoundError("User not found");
+  }
+
+  return result;
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
+  getMe,
 };

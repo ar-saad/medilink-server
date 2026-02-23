@@ -173,25 +173,8 @@ const createAdmin = async (payload: TCreateAdminPayload) => {
         where: {
           id: adminData.id,
         },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          profilePhoto: true,
-          contactNumber: true,
-          address: true,
-          isDeleted: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              role: true,
-              status: true,
-            },
-          },
+        include: {
+          user: true,
         },
       });
 
@@ -251,25 +234,8 @@ const createSuperAdmin = async (payload: TCreateSuperAdminPayload) => {
         where: {
           id: superAdminData.id,
         },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          profilePhoto: true,
-          contactNumber: true,
-          address: true,
-          isDeleted: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              role: true,
-              status: true,
-            },
-          },
+        include: {
+          user: true,
         },
       });
 

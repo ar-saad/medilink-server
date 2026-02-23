@@ -4,6 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
 import { tokenUtils } from "../../utils/token";
 
+// POST | "/api/v1/auth/register" | Register a new patient
 const registerPatient = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -33,6 +34,7 @@ const registerPatient = asyncHandler(async (req, res) => {
   });
 });
 
+// POST | "/api/v1/auth/login" | Login user
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -61,7 +63,22 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
+// GET | "/api/v1/auth/me" | Get current user details
+const getMe = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  const result = await AuthService.getMe(user);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User details retrieved successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
+  getMe,
 };

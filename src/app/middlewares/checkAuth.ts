@@ -75,6 +75,12 @@ export const checkAuth =
             "Forbidden access: User does not have the required permission to access this resource",
           );
         }
+
+        req.user = {
+          userId: user.id,
+          role: user.role,
+          email: user.email,
+        };
       }
 
       // Verify access token
