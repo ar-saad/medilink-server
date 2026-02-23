@@ -77,7 +77,7 @@ export const checkAuth =
         }
 
         req.user = {
-          userId: user.id,
+          id: user.id,
           role: user.role,
           email: user.email,
         };

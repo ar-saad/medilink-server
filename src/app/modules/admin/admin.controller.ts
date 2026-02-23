@@ -3,6 +3,7 @@ import status from "http-status";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { AdminService } from "./admin.service";
+import { TRequestUser } from "../../types/requestUser.type";
 
 // GET | "/api/v1/admins" | Get all admins
 const getAllAdmins = asyncHandler(async (req: Request, res: Response) => {
@@ -48,8 +49,9 @@ const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID
 const deleteAdmin = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const user = req.user as TRequestUser;
 
-  const result = await AdminService.deleteAdmin(id as string);
+  const result = await AdminService.deleteAdmin(id as string, user);
 
   sendResponse(res, {
     statusCode: status.OK,

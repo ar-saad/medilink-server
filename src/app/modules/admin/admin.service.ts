@@ -1,7 +1,8 @@
 import { UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { TUpdateAdminPayload } from "./admin.types";
-import { NotFoundError } from "../../errorHelpers/AppError";
+import { BadRequestError, NotFoundError } from "../../errorHelpers/AppError";
+import { TRequestUser } from "../../types/requestUser.type";
 
 // GET | "/api/v1/admins" | Get all admins
 const getAllAdmins = async () => {
@@ -51,7 +52,7 @@ const updateAdmin = async (id: string, payload: TUpdateAdminPayload) => {
 };
 
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID
-const deleteAdmin = async (id: string) => {
+const deleteAdmin = async (id: string, user: TRequestUser) => {
   //TODO: Validate who is deleting the admin user. Only super admin can delete admin user and only super admin can delete super admin user but admin user cannot delete super admin user
   //TODO: a super admin can not delete himself
 
@@ -63,6 +64,11 @@ const deleteAdmin = async (id: string) => {
 
   if (!isAdminExist) {
     throw new NotFoundError("Admin not found");
+  }
+
+  // Prevent super admin from deleting himself
+  if (isAdminExist.userId === user.id) {
+    throw new BadRequestError("You cannot delete yourself");
   }
 
   const result = await prisma.$transaction(async (tx) => {

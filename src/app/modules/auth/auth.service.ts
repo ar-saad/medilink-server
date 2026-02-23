@@ -6,6 +6,7 @@ import {
 } from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
+import { TRequestUser } from "../../types/requestUser.type";
 import { tokenUtils } from "../../utils/token";
 import { TLoginUserPayload, TRegisterPatientPayload } from "./auth.types";
 
@@ -114,15 +115,9 @@ const loginUser = async (payload: TLoginUserPayload) => {
 };
 
 // GET | "/api/v1/auth/me" | Get current user details
-const getMe = async (user: {
-  userId: string;
-  role: UserRole;
-  email: string;
-}) => {
+const getMe = async (user: TRequestUser) => {
   const result = await prisma.user.findUnique({
-    where: {
-      id: user.userId,
-    },
+    where: { id: user.id },
     include: {
       patient: {
         include: {
