@@ -33,6 +33,19 @@ const getDoctorById = async (id: string) => {
           specialty: true,
         },
       },
+      appointments: {
+        include: {
+          patient: true,
+          schedule: true,
+          prescription: true,
+        },
+      },
+      doctorSchedules: {
+        include: {
+          schedule: true,
+        },
+      },
+      reviews: true,
     },
   });
 
@@ -129,10 +142,6 @@ const deleteDoctor = async (id: string) => {
 
     // Delete sessions associated with the user
     await tx.session.deleteMany({
-      where: { userId: isDoctorExist.userId },
-    });
-
-    await tx.account.deleteMany({
       where: { userId: isDoctorExist.userId },
     });
 

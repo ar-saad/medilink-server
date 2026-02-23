@@ -27,6 +27,10 @@ router.patch(
   DoctorController.updateDoctor,
 );
 // DELETE | "/api/v1/doctors/:id" | Soft delete doctor by ID
-router.delete("/:id", DoctorController.deleteDoctor);
+router.delete(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  DoctorController.deleteDoctor,
+);
 
 export const DoctorRouter = router;
