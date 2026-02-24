@@ -77,8 +77,47 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
+// GET | "/api/v1/auth/refresh-token" | Refresh access token
+const getNewToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies["refreshToken"];
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  if (!refreshToken || !sessionToken) {
+    return sendResponse(res, {
+      statusCode: status.UNAUTHORIZED,
+      success: false,
+      message: "Refresh token or session token is missing",
+    });
+  }
+
+  const result = await AuthService.getNewToken(refreshToken, sessionToken);
+
+  const {
+    accessToken,
+    refreshToken: newRefreshToken,
+    sessionToken: newSessionToken,
+  } = result;
+
+  // Set tokens in cookie
+  tokenUtils.setAccessTokenCookie(res, accessToken);
+  tokenUtils.setRefreshTokenCookie(res, newRefreshToken);
+  tokenUtils.setBetterAuthSessionCookie(res, newSessionToken);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "New access token generated successfully",
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
+      sessionToken: newSessionToken,
+    },
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
   getMe,
+  getNewToken,
 };
