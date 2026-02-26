@@ -20,16 +20,7 @@ router.get(
   ),
   AuthController.getMe,
 );
-// GET | "/api/v1/auth/refresh-token" | Refresh access token
-router.get(
-  "/refresh-token",
-  checkAuth(
-    UserRole.PATIENT,
-    UserRole.DOCTOR,
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-  ),
-  AuthController.getNewToken,
-);
+// POST | "/api/v1/auth/refresh-token" | Refresh access token
+router.post("/refresh-token", AuthController.getNewToken);
 
 export const AuthRouter = router;

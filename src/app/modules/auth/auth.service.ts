@@ -151,7 +151,7 @@ const getMe = async (user: TRequestUser) => {
   return result;
 };
 
-// GET | "/api/v1/auth/refresh-token" | Refresh access token
+// POST | "/api/v1/auth/refresh-token" | Refresh access token
 const getNewToken = async (refreshToken: string, sessionToken: string) => {
   // Verify if session token exists and is valid
   const isSessionTokenExists = await prisma.session.findUnique({
@@ -180,13 +180,13 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   const data = verifiedRefreshToken.data as JwtPayload;
 
   const tokenCreationPayload = {
-    userId: data.user.id,
-    name: data.user.name,
-    email: data.user.email,
-    emailVerified: data.user.emailVerified,
-    role: data.user.role,
-    status: data.user.status,
-    isDeleted: data.user.isDeleted,
+    userId: data.id,
+    name: data.name,
+    email: data.email,
+    emailVerified: data.emailVerified,
+    role: data.role,
+    status: data.status,
+    isDeleted: data.isDeleted,
   };
 
   // Generate new access and refresh token

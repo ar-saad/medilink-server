@@ -77,7 +77,7 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
-// GET | "/api/v1/auth/refresh-token" | Refresh access token
+// POST | "/api/v1/auth/refresh-token" | Refresh access token
 const getNewToken = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies["refreshToken"];
   const sessionToken = req.cookies["better-auth.session_token"];
