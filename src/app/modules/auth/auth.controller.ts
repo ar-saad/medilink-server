@@ -25,7 +25,8 @@ const registerPatient = asyncHandler(async (req, res) => {
   sendResponse(res, {
     statusCode: status.CREATED,
     success: true,
-    message: "Patient registered successfully",
+    message:
+      "Patient registered successfully. Please verify your email to activate your account.",
     data: {
       token,
       accessToken,
@@ -168,6 +169,19 @@ const logoutUser = asyncHandler(async (req, res) => {
   });
 });
 
+// POST | "/api/v1/auth/verify-email" | Verify user email
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  await AuthService.verifyEmail(email, otp);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Email verified successfully",
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
@@ -175,4 +189,5 @@ export const AuthController = {
   getNewToken,
   changePassword,
   logoutUser,
+  verifyEmail,
 };

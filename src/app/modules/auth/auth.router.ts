@@ -50,4 +50,7 @@ router.post(
   AuthController.logoutUser,
 );
 
+// POST | "/api/v1/auth/verify-email" | Verify user email
+router.post("/verify-email", AuthController.verifyEmail);
+
 export const AuthRouter = router;
