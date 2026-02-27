@@ -3,6 +3,7 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
 import { tokenUtils } from "../../utils/token";
+import { cookieUtils } from "../../utils/cookie";
 
 // POST | "/api/v1/auth/register" | Register a new patient
 const registerPatient = asyncHandler(async (req, res) => {
@@ -115,9 +116,63 @@ const getNewToken = asyncHandler(async (req, res) => {
   });
 });
 
+// POST | "/api/v1/auth/change-password" | Change user password
+const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  const result = await AuthService.changePassword(
+    {
+      currentPassword,
+      newPassword,
+    },
+    sessionToken,
+  );
+
+  const { accessToken, refreshToken, token, ...rest } = result;
+
+  // Set tokens in cookie
+  tokenUtils.setAccessTokenCookie(res, accessToken);
+  tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  tokenUtils.setBetterAuthSessionCookie(res, token as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password changed successfully",
+    data: {
+      token,
+      accessToken,
+      refreshToken,
+      ...rest,
+    },
+  });
+});
+
+// POST | "/api/v1/auth/logout" | Logout user from current session
+const logoutUser = asyncHandler(async (req, res) => {
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  const result = await AuthService.logoutUser(sessionToken);
+
+  // Clear tokens from cookie
+  cookieUtils.clearCookie(res, "accessToken");
+  cookieUtils.clearCookie(res, "refreshToken");
+  cookieUtils.clearCookie(res, "better-auth.session_token");
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User logged out successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
   getMe,
   getNewToken,
+  changePassword,
+  logoutUser,
 };

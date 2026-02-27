@@ -12,7 +12,11 @@ import { prisma } from "../../lib/prisma";
 import { TRequestUser } from "../../types/requestUser.type";
 import { jwtUtils } from "../../utils/jwt";
 import { tokenUtils } from "../../utils/token";
-import { TLoginUserPayload, TRegisterPatientPayload } from "./auth.types";
+import {
+  TChangePasswordPayload,
+  TLoginUserPayload,
+  TRegisterPatientPayload,
+} from "./auth.types";
 
 // POST | "/api/v1/auth/register" | Register a new patient
 const registerPatient = async (payload: TRegisterPatientPayload) => {
@@ -211,9 +215,69 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   };
 };
 
+// POST | "/api/v1/auth/change-password" | Change user password
+const changePassword = async (
+  payload: TChangePasswordPayload,
+  sessionToken: string,
+) => {
+  const session = await auth.api.getSession({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  if (!session) {
+    throw new UnauthorizedError("Invalid session token");
+  }
+
+  const { currentPassword, newPassword } = payload;
+
+  const result = await auth.api.changePassword({
+    body: {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  const tokenCreationPayload = {
+    userId: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    emailVerified: session.user.emailVerified,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+  };
+
+  // Generate access token
+  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
+
+  // Generate refresh token
+  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
+
+  return { ...result, accessToken, refreshToken };
+};
+
+// POST | "/api/v1/auth/logout" | Logout user from current session
+const logoutUser = async (sessionToken: string) => {
+  const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  return result;
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
   getMe,
   getNewToken,
+  changePassword,
+  logoutUser,
 };
