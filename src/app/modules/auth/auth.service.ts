@@ -13,6 +13,7 @@ import { TRequestUser } from "../../types/requestUser.type";
 import { jwtUtils } from "../../utils/jwt";
 import { tokenUtils } from "../../utils/token";
 import {
+  TBetterAuthSession,
   TChangePasswordPayload,
   TLoginUserPayload,
   TRegisterPatientPayload,
@@ -393,6 +394,43 @@ const resetPassword = async (
   });
 };
 
+// GET | "/api/v1/auth/login/google/success" | Create patient after successful Google OAuth login
+const googleLoginSuccess = async (session: TBetterAuthSession) => {
+  const existingPatient = await prisma.patient.findUnique({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
+  if (!existingPatient) {
+    await prisma.patient.create({
+      data: {
+        userId: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+      },
+    });
+  }
+
+  const tokenCreationPayload = {
+    userId: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    emailVerified: session.user.emailVerified,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+  };
+
+  // Generate access token
+  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
+
+  // Generate refresh token
+  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
+
+  return { accessToken, refreshToken };
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
@@ -403,4 +441,5 @@ export const AuthService = {
   verifyEmail,
   forgetPassword,
   resetPassword,
+  googleLoginSuccess,
 };

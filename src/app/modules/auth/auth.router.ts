@@ -59,4 +59,13 @@ router.post("/forget-password", AuthController.forgetPassword);
 // POST | "/api/v1/auth/reset-password" | Reset user password using OTP
 router.post("/reset-password", AuthController.resetPassword);
 
+// GET | "/api/v1/auth/login/google" | Google OAuth login
+router.get("/login/google", AuthController.googleLogin);
+
+// GET | "/api/v1/auth/login/google/success" | Create patient after successful Google OAuth login
+router.get("/login/google/success", AuthController.googleLoginSuccess);
+
+// GET | "/api/v1/auth/oauth/error" | Handle Google OAuth login failure
+router.get("/oauth/error", AuthController.handleOAuthError);
+
 export const AuthRouter = router;
