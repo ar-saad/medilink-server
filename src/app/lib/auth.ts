@@ -130,6 +130,14 @@ export const auth = betterAuth({
     },
   },
 
+  trustedOrigins: [
+    env.FRONTEND_URL,
+    env.BETTER_AUTH_URL,
+    "http://localhost:5173",
+    "http://localhost:5000",
+    "http://localhost:3000",
+  ],
+
   advanced: {
     useSecureCookies: false,
     cookies: {
