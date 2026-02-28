@@ -243,6 +243,18 @@ const changePassword = async (
     }),
   });
 
+  // Update needPasswordChange field to false after successful password change
+  if (session.user.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
   const tokenCreationPayload = {
     userId: session.user.id,
     name: session.user.name,
@@ -360,6 +372,18 @@ const resetPassword = async (
       password: newPassword,
     },
   });
+
+  // Update needPasswordChange field to false after successful password reset
+  if (isUserExists.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: isUserExists.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
 
   // Invalidate all existing sessions for the user after password reset
   await prisma.session.deleteMany({
