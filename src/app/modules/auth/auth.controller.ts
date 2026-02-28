@@ -182,6 +182,32 @@ const verifyEmail = asyncHandler(async (req, res) => {
   });
 });
 
+// POST | "/api/v1/auth/forget-password" | Send OTP to user email for password reset
+const forgetPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  await AuthService.forgetPassword(email);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password reset OTP sent to email successfully",
+  });
+});
+
+// POST | "/api/v1/auth/reset-password" | Reset user password using OTP
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  await AuthService.resetPassword(email, otp, newPassword);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password reset successfully",
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
@@ -190,4 +216,6 @@ export const AuthController = {
   changePassword,
   logoutUser,
   verifyEmail,
+  forgetPassword,
+  resetPassword,
 };

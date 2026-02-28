@@ -294,6 +294,81 @@ const verifyEmail = async (email: string, otp: string) => {
   }
 };
 
+// POST | "/api/v1/auth/forget-password" | Send OTP to user email for password reset
+const forgetPassword = async (email: string) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  // Check account status before allowing password reset
+  if (!isUserExists) {
+    throw new NotFoundError("User with this email does not exist");
+  }
+
+  if (!isUserExists.emailVerified) {
+    throw new BadRequestError(
+      "Email is not verified. Please verify your email first.",
+    );
+  }
+
+  if (isUserExists.isDeleted || isUserExists.status === UserStatus.BLOCKED) {
+    throw new BadRequestError("User account is deleted or inactive.");
+  }
+
+  // Send OTP to user email for password reset
+  await auth.api.requestPasswordResetEmailOTP({
+    body: {
+      email,
+    },
+  });
+};
+
+// POST | "/api/v1/auth/reset-password" | Reset user password using OTP
+const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string,
+) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  // Check account status before allowing password reset
+  if (!isUserExists) {
+    throw new NotFoundError("User with this email does not exist");
+  }
+
+  if (!isUserExists.emailVerified) {
+    throw new BadRequestError(
+      "Email is not verified. Please verify your email first.",
+    );
+  }
+
+  if (isUserExists.isDeleted || isUserExists.status === UserStatus.BLOCKED) {
+    throw new BadRequestError("User account is deleted or inactive.");
+  }
+
+  // Reset password using OTP
+  await auth.api.resetPasswordEmailOTP({
+    body: {
+      email,
+      otp,
+      password: newPassword,
+    },
+  });
+
+  // Invalidate all existing sessions for the user after password reset
+  await prisma.session.deleteMany({
+    where: {
+      userId: isUserExists.id,
+    },
+  });
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
@@ -302,4 +377,6 @@ export const AuthService = {
   changePassword,
   logoutUser,
   verifyEmail,
+  forgetPassword,
+  resetPassword,
 };
