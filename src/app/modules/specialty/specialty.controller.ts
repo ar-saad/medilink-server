@@ -7,10 +7,14 @@ import {
   TUpdateSpecialtyPayload,
 } from "./specialty.types";
 
+// POST | "/api/v1/specialties" | Create a new specialty
 const createSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const payload = req.body as TCreateSpecialtyPayload;
 
-  const result = await SpecialtyService.createSpecialty(payload);
+  const result = await SpecialtyService.createSpecialty({
+    ...payload,
+    icon: req.file?.path,
+  });
 
   sendResponse(res, {
     statusCode: 201,
@@ -20,6 +24,7 @@ const createSpecialty = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// GET | "/api/v1/specialties" | Get all specialties
 const getAllSpecialties = asyncHandler(async (req: Request, res: Response) => {
   const result = await SpecialtyService.getAllSpecialties();
 
@@ -31,6 +36,7 @@ const getAllSpecialties = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// PATCH | "/api/v1/specialties/:id" | Update a specialty by ID
 const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body as TUpdateSpecialtyPayload;
@@ -45,6 +51,7 @@ const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// DELETE | "/api/v1/specialties/:id" | Delete a specialty by ID
 const deleteSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await SpecialtyService.deleteSpecialty(id as string);
