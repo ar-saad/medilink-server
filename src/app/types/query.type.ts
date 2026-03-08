@@ -39,8 +39,8 @@ export type TQueryParams = {
 };
 
 export type TQueryConfig = {
-  searchableFields: string[];
-  filterableFields: string[];
+  searchableFields?: string[];
+  filterableFields?: string[];
 };
 
 export type PrismaStringFilter = {

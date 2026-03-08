@@ -7,13 +7,16 @@ import status from "http-status";
 
 // GET | "/api/v1/doctors" | Get all doctors
 const getAllDoctors = asyncHandler(async (req: Request, res: Response) => {
-  const doctors = await DoctorService.getAllDoctors();
+  const query = req.query;
+
+  const doctors = await DoctorService.getAllDoctors(query);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Doctors retrieved successfully",
-    data: doctors,
+    data: doctors.data,
+    meta: doctors.meta,
   });
 });
 

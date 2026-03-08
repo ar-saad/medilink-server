@@ -8,8 +8,12 @@ import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./app/lib/auth";
 import { env } from "./app/config/env";
+import qs from "qs";
 
 const app: Application = express();
+
+// Parser to handle nested query parameters using qs library
+app.set("query parser", (str: string) => qs.parse(str));
 
 // Set EJS as the view engine and configure views directory
 app.set("view engine", "ejs");
