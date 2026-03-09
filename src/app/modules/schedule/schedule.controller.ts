@@ -3,6 +3,7 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { ScheduleService } from "./schedule.service";
 import { Request, Response } from "express";
+import { TQueryParams } from "../../types/query.type";
 
 // POST | "/api/v1/schedule/" | Create a new schedule
 const createSchedule = asyncHandler(async (req: Request, res: Response) => {
@@ -19,7 +20,8 @@ const createSchedule = asyncHandler(async (req: Request, res: Response) => {
 
 // GET | "/api/v1/schedule/" | Get all schedules
 const getAllSchedules = asyncHandler(async (req: Request, res: Response) => {
-  const result = await ScheduleService.getAllSchedules();
+  const query = req.query as TQueryParams;
+  const result = await ScheduleService.getAllSchedules(query);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -31,7 +33,9 @@ const getAllSchedules = asyncHandler(async (req: Request, res: Response) => {
 
 // GET | "/api/v1/schedule/:id" | Get a schedule by ID
 const getScheduleById = asyncHandler(async (req: Request, res: Response) => {
-  const result = await ScheduleService.getScheduleById();
+  const { id } = req.params;
+
+  const result = await ScheduleService.getScheduleById(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -43,7 +47,10 @@ const getScheduleById = asyncHandler(async (req: Request, res: Response) => {
 
 // PATCH | "/api/v1/schedule/:id" | Update a schedule by ID
 const updateSchedule = asyncHandler(async (req: Request, res: Response) => {
-  const result = await ScheduleService.updateSchedule();
+  const { id } = req.params;
+  const payload = req.body;
+
+  const result = await ScheduleService.updateSchedule(id as string, payload);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -55,7 +62,9 @@ const updateSchedule = asyncHandler(async (req: Request, res: Response) => {
 
 // DELETE | "/api/v1/schedule/:id" | Delete a schedule by ID
 const deleteSchedule = asyncHandler(async (req: Request, res: Response) => {
-  const result = await ScheduleService.deleteSchedule();
+  const { id } = req.params;
+
+  const result = await ScheduleService.deleteSchedule(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
