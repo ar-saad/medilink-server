@@ -1,16 +1,16 @@
 model Schedule {
-  id              String            @id @default(uuid(7))
+  id              String           @id @default(uuid(7))
   startDateTime   DateTime
   endDateTime     DateTime
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  doctorSchedules DoctorSchedules[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  doctorSchedules DoctorSchedule[]
   appointments    Appointment[]
 
   @@map("schedules")
 }
 
-model DoctorSchedules {
+model DoctorSchedule {
   doctorId String
   doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
