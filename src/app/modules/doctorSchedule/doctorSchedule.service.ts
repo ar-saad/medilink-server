@@ -1,5 +1,13 @@
+import { DoctorSchedule, Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { TQueryParams } from "../../types/query.type";
 import { TRequestUser } from "../../types/requestUser.type";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import {
+  doctorScheduleFilterableFields,
+  doctorScheduleIncludeConfig,
+  doctorScheduleSearchableFields,
+} from "./doctorSchedule.constants";
 import {
   TCreateDoctorSchedulePayload,
   TUpdateDoctorSchedulePayload,
@@ -29,13 +37,90 @@ const createMyDoctorSchedule = async (
 };
 
 // GET | "/api/v1/doctor-schedules/my-doctor-schedules" | Doctor get their own schedules
-const getMyDoctorSchedules = async () => {};
+const getMyDoctorSchedules = async (
+  user: TRequestUser,
+  query: TQueryParams,
+) => {
+  const doctorData = await prisma.doctor.findUniqueOrThrow({
+    where: {
+      email: user.email,
+    },
+  });
+
+  const queryBuilder = new QueryBuilder<
+    DoctorSchedule,
+    Prisma.DoctorScheduleWhereInput,
+    Prisma.DoctorScheduleInclude
+  >(
+    prisma.doctorSchedule,
+    {
+      doctorId: doctorData.id,
+      ...query,
+    },
+    {
+      filterableFields: doctorScheduleFilterableFields,
+      searchableFields: doctorScheduleSearchableFields,
+    },
+  );
+
+  const doctorSchedules = await queryBuilder
+    .search()
+    .filter()
+    .paginate()
+    .include({
+      schedule: true,
+      doctor: {
+        include: {
+          user: true,
+        },
+      },
+    })
+    .sort()
+    .fields()
+    .dynamicInclude(doctorScheduleIncludeConfig)
+    .execute();
+
+  return doctorSchedules;
+};
 
 // GET | "/api/v1/doctor-schedules" | Admin get all doctor schedules
-const getAllDoctorSchedules = async () => {};
+const getAllDoctorSchedules = async (query: TQueryParams) => {
+  const queryBuilder = new QueryBuilder<
+    DoctorSchedule,
+    Prisma.DoctorScheduleWhereInput,
+    Prisma.DoctorScheduleInclude
+  >(prisma.doctorSchedule, query, {
+    filterableFields: doctorScheduleFilterableFields,
+    searchableFields: doctorScheduleSearchableFields,
+  });
+
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .paginate()
+    .dynamicInclude(doctorScheduleIncludeConfig)
+    .sort()
+    .execute();
+
+  return result;
+};
 
 // GET | "/api/v1/doctor-schedules/:doctorId/schedule/:scheduleId" | Admin get doctor schedule by id
-const getDoctorScheduleById = async () => {};
+const getDoctorScheduleById = async (doctorId: string, scheduleId: string) => {
+  const doctorSchedule = await prisma.doctorSchedule.findUnique({
+    where: {
+      doctorId_scheduleId: {
+        doctorId: doctorId,
+        scheduleId: scheduleId,
+      },
+    },
+    include: {
+      schedule: true,
+      doctor: true,
+    },
+  });
+  return doctorSchedule;
+};
 
 // PATCH | "/api/v1/doctor-schedules/update-my-doctor-schedule" | Doctor update their own schedule
 const updateMyDoctorSchedule = async (
@@ -81,8 +166,25 @@ const updateMyDoctorSchedule = async (
   return result;
 };
 
-// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:id" | Doctor delete their own schedule
-const deleteMyDoctorSchedule = async () => {};
+// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:scheduleId" | Doctor delete their own schedule
+const deleteMyDoctorSchedule = async (
+  scheduleId: string,
+  user: TRequestUser,
+) => {
+  const doctorData = await prisma.doctor.findUniqueOrThrow({
+    where: {
+      email: user.email,
+    },
+  });
+
+  await prisma.doctorSchedule.deleteMany({
+    where: {
+      isBooked: false,
+      doctorId: doctorData.id,
+      scheduleId,
+    },
+  });
+};
 
 export const DoctorScheduleService = {
   createMyDoctorSchedule,

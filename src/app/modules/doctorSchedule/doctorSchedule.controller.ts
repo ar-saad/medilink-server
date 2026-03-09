@@ -27,12 +27,19 @@ const createMyDoctorSchedule = asyncHandler(
 // GET | "/api/v1/doctor-schedules/my-doctor-schedules" | Doctor get their own schedules
 const getMyDoctorSchedules = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await DoctorScheduleService.getMyDoctorSchedules();
+    const user = req.user;
+    const query = req.query;
+
+    const result = await DoctorScheduleService.getMyDoctorSchedules(
+      user,
+      query,
+    );
     sendResponse(res, {
       success: true,
       statusCode: status.OK,
       message: "Doctor schedules retrieved successfully",
-      data: result,
+      data: result.data,
+      meta: result.meta,
     });
   },
 );
@@ -40,12 +47,16 @@ const getMyDoctorSchedules = asyncHandler(
 // GET | "/api/v1/doctor-schedules" | Admin get all doctor schedules
 const getAllDoctorSchedules = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await DoctorScheduleService.getAllDoctorSchedules();
+    const query = req.query;
+
+    const result = await DoctorScheduleService.getAllDoctorSchedules(query);
+
     sendResponse(res, {
       success: true,
       statusCode: status.OK,
       message: "All doctor schedules retrieved successfully",
-      data: result,
+      data: result.data,
+      meta: result.meta,
     });
   },
 );
@@ -53,12 +64,19 @@ const getAllDoctorSchedules = asyncHandler(
 // GET | "/api/v1/doctor-schedules/:doctorId/schedule/:scheduleId" | Admin get doctor schedule by id
 const getDoctorScheduleById = asyncHandler(
   async (req: Request, res: Response) => {
-    const doctorSchedule = await DoctorScheduleService.getDoctorScheduleById();
+    const doctorId = req.params.doctorId;
+    const scheduleId = req.params.scheduleId;
+
+    const result = await DoctorScheduleService.getDoctorScheduleById(
+      doctorId as string,
+      scheduleId as string,
+    );
+
     sendResponse(res, {
       success: true,
       statusCode: status.OK,
       message: "Doctor schedule retrieved successfully",
-      data: doctorSchedule,
+      data: result,
     });
   },
 );
@@ -69,22 +87,31 @@ const updateMyDoctorSchedule = asyncHandler(
     const user = req.user;
     const payload = req.body;
 
-    const updatedDoctorSchedule =
-      await DoctorScheduleService.updateMyDoctorSchedule(user, payload);
+    const result = await DoctorScheduleService.updateMyDoctorSchedule(
+      user,
+      payload,
+    );
 
     sendResponse(res, {
       success: true,
       statusCode: status.OK,
       message: "Doctor schedule updated successfully",
-      data: updatedDoctorSchedule,
+      data: result,
     });
   },
 );
 
-// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:id" | Doctor delete their own schedule
+// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:scheduleId" | Doctor delete their own schedule
 const deleteMyDoctorSchedule = asyncHandler(
   async (req: Request, res: Response) => {
-    await DoctorScheduleService.deleteMyDoctorSchedule();
+    const scheduleId = req.params.scheduleId;
+    const user = req.user;
+
+    await DoctorScheduleService.deleteMyDoctorSchedule(
+      scheduleId as string,
+      user,
+    );
+
     sendResponse(res, {
       success: true,
       statusCode: status.OK,

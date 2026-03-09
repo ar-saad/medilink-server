@@ -47,9 +47,9 @@ router.patch(
   DoctorScheduleController.updateMyDoctorSchedule,
 );
 
-// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:id" | Doctor delete their own schedule
+// DELETE | "/api/v1/doctor-schedules/delete-my-doctor-schedule/:scheduleId" | Doctor delete their own schedule
 router.delete(
-  "/delete-my-doctor-schedule/:id",
+  "/delete-my-doctor-schedule/:scheduleId",
   checkAuth(UserRole.DOCTOR),
   DoctorScheduleController.deleteMyDoctorSchedule,
 );
