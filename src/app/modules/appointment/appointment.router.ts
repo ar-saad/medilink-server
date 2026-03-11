@@ -7,7 +7,7 @@ import { createAppointmentSchema } from "./appointment.schema";
 
 const router = Router();
 
-//* POST | "/api/v1/appointments/book-appointment" | Book an appointment
+//* POST | "/api/v1/appointments/book-appointment" | Book an appointment with immediate payment
 router.post(
   "/book-appointment",
   checkAuth(UserRole.PATIENT),
@@ -52,6 +52,7 @@ router.get(
 router.post(
   "/book-appointment-with-pay-later",
   checkAuth(UserRole.PATIENT),
+  validateRequest(createAppointmentSchema),
   AppointmentController.bookAppointmentWithPayLater,
 );
 

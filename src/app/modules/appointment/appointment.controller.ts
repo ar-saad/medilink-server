@@ -4,7 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AppointmentService } from "./appointment.service";
 import status from "http-status";
 
-//* POST | "/api/v1/appointments/book-appointment" | Book an appointment
+//* POST | "/api/v1/appointments/book-appointment" | Book an appointment with immediate payment
 const bookAppointment = asyncHandler(async (req: Request, res: Response) => {
   const payload = req.body;
   const user = req.user;
@@ -90,7 +90,13 @@ const getAllAppointments = asyncHandler(async (req: Request, res: Response) => {
 //* POST | "/api/v1/appointments/book-appointment-with-pay-later" | Book an appointment with pay later option
 const bookAppointmentWithPayLater = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await AppointmentService.bookAppointmentWithPayLater();
+    const payload = req.body;
+    const user = req.user;
+
+    const result = await AppointmentService.bookAppointmentWithPayLater(
+      payload,
+      user,
+    );
 
     sendResponse(res, {
       statusCode: status.CREATED,
@@ -103,7 +109,13 @@ const bookAppointmentWithPayLater = asyncHandler(
 
 //* POST | "/api/v1/appointments/initiate-payment/:appointmentId" | Initiate payment for an appointment
 const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
-  const result = await AppointmentService.initiatePayment();
+  const { appointmentId } = req.params;
+  const user = req.user;
+
+  const result = await AppointmentService.initiatePayment(
+    appointmentId as string,
+    user,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
