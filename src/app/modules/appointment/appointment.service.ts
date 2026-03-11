@@ -166,7 +166,6 @@ const getMyAppointments = async (user: TRequestUser) => {
 // 2. Doctors can only update Appointment status from schedule to inprogress or inprogress to completed or schedule to cancelled.
 // 3. Patients can only cancel the scheduled appointment if it scheduled not completed or cancelled or inprogress.
 // 4. Admin and Super admin can update to any status.
-
 //* PATCH | "/api/v1/appointments/change-appointment-status/:id" | Change appointment status
 const changeAppointmentStatus = async (
   appointmentId: string,
@@ -395,6 +394,61 @@ const initiatePayment = async (appointmentId: string, user: TRequestUser) => {
   };
 };
 
+//* CRON job function to cancel all unpaid appointments after 30 minutes of booking
+//TODO: Cancel appointments that are about to start within next 30 minutes and not paid yet.
+const cancelUnpaidAppointments = async () => {
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+  const unpaidAppointments = await prisma.appointment.findMany({
+    where: {
+      // status: AppointmentStatus.SCHEDULED,
+      createdAt: {
+        lte: thirtyMinutesAgo,
+      },
+      paymentStatus: PaymentStatus.UNPAID,
+    },
+  });
+
+  const appointmentToCancelIds = unpaidAppointments.map(
+    (appointment) => appointment.id,
+  );
+
+  await prisma.$transaction(async (tx) => {
+    await tx.appointment.updateMany({
+      where: {
+        id: {
+          in: appointmentToCancelIds,
+        },
+      },
+      data: {
+        status: AppointmentStatus.CANCELED,
+      },
+    });
+
+    await tx.payment.deleteMany({
+      where: {
+        appointmentId: {
+          in: appointmentToCancelIds,
+        },
+      },
+    });
+
+    for (const unpaidAppointment of unpaidAppointments) {
+      await tx.doctorSchedule.update({
+        where: {
+          doctorId_scheduleId: {
+            doctorId: unpaidAppointment.doctorId,
+            scheduleId: unpaidAppointment.scheduleId,
+          },
+        },
+        data: {
+          isBooked: false,
+        },
+      });
+    }
+  });
+};
+
 export const AppointmentService = {
   bookAppointment,
   getMyAppointments,
@@ -403,4 +457,5 @@ export const AppointmentService = {
   getAllAppointments,
   bookAppointmentWithPayLater,
   initiatePayment,
+  cancelUnpaidAppointments,
 };

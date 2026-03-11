@@ -10,6 +10,8 @@ import { auth } from "./app/lib/auth";
 import { env } from "./app/config/env";
 import qs from "qs";
 import { PaymentController } from "./app/modules/payment/payment.controller";
+import cron from "node-cron";
+import { AppointmentService } from "./app/modules/appointment/appointment.service";
 
 const app: Application = express();
 
@@ -52,6 +54,16 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(cookieParser());
+
+// Cron job to cancel unpaid appointments every 25 minutes
+cron.schedule("*/25 * * * *", async () => {
+  try {
+    console.log("Running cron job to cancel unpaid appointments...");
+    await AppointmentService.cancelUnpaidAppointments();
+  } catch (error) {
+    console.error("Error occurred while canceling unpaid appointments:", error);
+  }
+});
 
 // Router
 app.use("/api/v1", IndexRouter);
