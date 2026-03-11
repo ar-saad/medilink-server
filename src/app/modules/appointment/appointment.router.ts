@@ -62,4 +62,4 @@ router.post(
   AppointmentController.initiatePayment,
 );
 
-export const AppointmentRoutes = router;
+export const AppointmentRouter = router;
