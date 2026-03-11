@@ -7,7 +7,7 @@ import { createAppointmentSchema } from "./appointment.schema";
 
 const router = Router();
 
-// POST | "/api/v1/appointments/book-appointment" | Book an appointment
+//* POST | "/api/v1/appointments/book-appointment" | Book an appointment
 router.post(
   "/book-appointment",
   checkAuth(UserRole.PATIENT),
@@ -15,16 +15,16 @@ router.post(
   AppointmentController.bookAppointment,
 );
 
-// GET | "/api/v1/appointments/my-appointments" | Get my appointments
+//* GET | "/api/v1/appointments/my-appointments" | Get my appointments
 router.get(
   "/my-appointments",
   checkAuth(UserRole.PATIENT, UserRole.DOCTOR),
   AppointmentController.getMyAppointments,
 );
 
-// PATCH | "/api/v1/appointments/change-appointment-status/:id" | Change appointment status
+//* PATCH | "/api/v1/appointments/change-appointment-status/:appointmentId" | Change appointment status
 router.patch(
-  "/change-appointment-status/:id",
+  "/change-appointment-status/:appointmentId",
   checkAuth(
     UserRole.PATIENT,
     UserRole.DOCTOR,
@@ -34,30 +34,30 @@ router.patch(
   AppointmentController.changeAppointmentStatus,
 );
 
-// GET | "/api/v1/appointments/my-single-appointment/:id" | Get my single appointment
+//* GET | "/api/v1/appointments/my-single-appointment/:appointmentId" | Get my single appointment
 router.get(
-  "/my-single-appointment/:id",
+  "/my-single-appointment/:appointmentId",
   checkAuth(UserRole.PATIENT, UserRole.DOCTOR),
   AppointmentController.getMySingleAppointment,
 );
 
-// GET | "/api/v1/appointments/all-appointments" | Get all appointments (Admin and Super Admin only)
+//* GET | "/api/v1/appointments/all-appointments" | Get all appointments (Admin and Super Admin only)
 router.get(
   "/all-appointments",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   AppointmentController.getAllAppointments,
 );
 
-// POST | "/api/v1/appointments/book-appointment-with-pay-later" | Book an appointment with pay later option
+//* POST | "/api/v1/appointments/book-appointment-with-pay-later" | Book an appointment with pay later option
 router.post(
   "/book-appointment-with-pay-later",
   checkAuth(UserRole.PATIENT),
   AppointmentController.bookAppointmentWithPayLater,
 );
 
-// POST | "/api/v1/appointments/initiate-payment/:id" | Initiate payment for an appointment
+//* POST | "/api/v1/appointments/initiate-payment/:appointmentId" | Initiate payment for an appointment
 router.post(
-  "/initiate-payment/:id",
+  "/initiate-payment/:appointmentId",
   checkAuth(UserRole.PATIENT),
   AppointmentController.initiatePayment,
 );

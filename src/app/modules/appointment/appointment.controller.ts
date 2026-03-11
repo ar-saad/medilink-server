@@ -4,7 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AppointmentService } from "./appointment.service";
 import status from "http-status";
 
-// POST | "/api/v1/appointments/book-appointment" | Book an appointment
+//* POST | "/api/v1/appointments/book-appointment" | Book an appointment
 const bookAppointment = asyncHandler(async (req: Request, res: Response) => {
   const payload = req.body;
   const user = req.user;
@@ -19,9 +19,11 @@ const bookAppointment = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// GET | "/api/v1/appointments/my-appointments" | Get my appointments
+//* GET | "/api/v1/appointments/my-appointments" | Get my appointments
 const getMyAppointments = asyncHandler(async (req: Request, res: Response) => {
-  const result = await AppointmentService.getMyAppointments();
+  const user = req.user;
+
+  const result = await AppointmentService.getMyAppointments(user);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -31,10 +33,18 @@ const getMyAppointments = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// PATCH | "/api/v1/appointments/change-appointment-status/:id" | Change appointment status
+//* PATCH | "/api/v1/appointments/change-appointment-status/:appointmentId" | Change appointment status
 const changeAppointmentStatus = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await AppointmentService.changeAppointmentStatus();
+    const { appointmentId } = req.params;
+    const { status: appointmentStatus } = req.body;
+    const user = req.user;
+
+    const result = await AppointmentService.changeAppointmentStatus(
+      appointmentId as string,
+      appointmentStatus,
+      user,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
@@ -45,10 +55,16 @@ const changeAppointmentStatus = asyncHandler(
   },
 );
 
-// GET | "/api/v1/appointments/my-single-appointment/:id" | Get my single appointment
+//* GET | "/api/v1/appointments/my-single-appointment/:appointmentId" | Get my single appointment
 const getMySingleAppointment = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await AppointmentService.getMySingleAppointment();
+    const { appointmentId } = req.params;
+    const user = req.user;
+
+    const result = await AppointmentService.getMySingleAppointment(
+      appointmentId as string,
+      user,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
@@ -59,7 +75,7 @@ const getMySingleAppointment = asyncHandler(
   },
 );
 
-// GET | "/api/v1/appointments/all-appointments" | Get all appointments (Admin and Super Admin only)
+//* GET | "/api/v1/appointments/all-appointments" | Get all appointments (Admin and Super Admin only)
 const getAllAppointments = asyncHandler(async (req: Request, res: Response) => {
   const result = await AppointmentService.getAllAppointments();
 
@@ -71,7 +87,7 @@ const getAllAppointments = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// POST | "/api/v1/appointments/book-appointment-with-pay-later" | Book an appointment with pay later option
+//* POST | "/api/v1/appointments/book-appointment-with-pay-later" | Book an appointment with pay later option
 const bookAppointmentWithPayLater = asyncHandler(
   async (req: Request, res: Response) => {
     const result = await AppointmentService.bookAppointmentWithPayLater();
@@ -85,7 +101,7 @@ const bookAppointmentWithPayLater = asyncHandler(
   },
 );
 
-// POST | "/api/v1/appointments/initiate-payment/:id" | Initiate payment for an appointment
+//* POST | "/api/v1/appointments/initiate-payment/:appointmentId" | Initiate payment for an appointment
 const initiatePayment = asyncHandler(async (req: Request, res: Response) => {
   const result = await AppointmentService.initiatePayment();
 
