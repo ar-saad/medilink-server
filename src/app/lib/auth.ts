@@ -87,6 +87,20 @@ export const auth = betterAuth({
             where: { email },
           });
 
+          if (!user) {
+            console.error(
+              `User with email ${email} not found for OTP verification email.`,
+            );
+            return;
+          }
+
+          if (user && user.role === UserRole.SUPER_ADMIN) {
+            console.log(
+              `User with email ${email} is a Super Admin. Skipping OTP email for verification.`,
+            );
+            return;
+          }
+
           if (user && !user.emailVerified) {
             sendEmail({
               to: email,
