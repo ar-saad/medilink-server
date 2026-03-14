@@ -16,6 +16,7 @@ import {
 
 // POST | "/api/v1/schedule/" | Create a new schedule
 const createSchedule = async (payload: TCreateSchedulePayload) => {
+  console.log("Creating schedule with payload:", payload);
   const { startDate, endDate, startTime, endTime } = payload;
 
   const interval = 30; // 30 minutes
@@ -26,10 +27,12 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
   const schedules = [];
 
   while (currentDate <= lastDate) {
+    console.log("Processing date:", currentDate);
+
     const startDateTime = new Date(
       addMinutes(
         addHours(
-          `${format(currentDate, "yyyy-MM-dd")}}`,
+          `${format(currentDate, "yyyy-MM-dd")}`,
           Number(startTime.split(":")[0]),
         ),
         Number(startTime.split(":")[1]),
@@ -39,7 +42,7 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
     const endDateTime = new Date(
       addMinutes(
         addHours(
-          `${format(currentDate, "yyyy-MM-dd")}}`,
+          `${format(currentDate, "yyyy-MM-dd")}`,
           Number(endTime.split(":")[0]),
         ),
         Number(endTime.split(":")[1]),
@@ -47,6 +50,8 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
     );
 
     while (startDateTime < endDateTime) {
+      console.log("Processing time slot:", startDateTime);
+
       const s = await convertDateTime(startDateTime);
       const e = await convertDateTime(addMinutes(startDateTime, interval));
 
@@ -72,12 +77,17 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
 
       // Increment the start time by the interval
       startDateTime.setMinutes(startDateTime.getMinutes() + interval);
+
+      console.log("Next time slot:", startDateTime);
     }
 
     // Move to the next day after processing the schedules for the current day
-    startDateTime.setDate(currentDate.getDate() + 1);
+    currentDate.setDate(currentDate.getDate() + 1);
+
+    console.log("Next date:", currentDate);
   }
 
+  console.log("All schedules created:", schedules);
   return schedules;
 };
 
@@ -114,6 +124,7 @@ const getScheduleById = async (id: string) => {
   return schedule;
 };
 
+//TODO Refactoring - doctor's appointment on booked slot conflict check
 // PATCH | "/api/v1/schedule/:id" | Update a schedule by ID
 const updateSchedule = async (id: string, payload: TUpdateSchedulePayload) => {
   const { startDate, endDate, startTime, endTime } = payload;
@@ -153,12 +164,13 @@ const updateSchedule = async (id: string, payload: TUpdateSchedulePayload) => {
 
 // DELETE | "/api/v1/schedule/:id" | Delete a schedule by ID
 const deleteSchedule = async (id: string) => {
-  await prisma.schedule.delete({
+  const result = await prisma.schedule.delete({
     where: {
       id: id,
     },
   });
-  return true;
+
+  return result;
 };
 
 export const ScheduleService = {
