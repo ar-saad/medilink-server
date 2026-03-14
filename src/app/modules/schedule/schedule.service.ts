@@ -16,7 +16,6 @@ import {
 
 // POST | "/api/v1/schedule/" | Create a new schedule
 const createSchedule = async (payload: TCreateSchedulePayload) => {
-  console.log("Creating schedule with payload:", payload);
   const { startDate, endDate, startTime, endTime } = payload;
 
   const interval = 30; // 30 minutes
@@ -27,8 +26,6 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
   const schedules = [];
 
   while (currentDate <= lastDate) {
-    console.log("Processing date:", currentDate);
-
     const startDateTime = new Date(
       addMinutes(
         addHours(
@@ -50,8 +47,6 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
     );
 
     while (startDateTime < endDateTime) {
-      console.log("Processing time slot:", startDateTime);
-
       const s = await convertDateTime(startDateTime);
       const e = await convertDateTime(addMinutes(startDateTime, interval));
 
@@ -77,17 +72,12 @@ const createSchedule = async (payload: TCreateSchedulePayload) => {
 
       // Increment the start time by the interval
       startDateTime.setMinutes(startDateTime.getMinutes() + interval);
-
-      console.log("Next time slot:", startDateTime);
     }
 
     // Move to the next day after processing the schedules for the current day
     currentDate.setDate(currentDate.getDate() + 1);
-
-    console.log("Next date:", currentDate);
   }
 
-  console.log("All schedules created:", schedules);
   return schedules;
 };
 

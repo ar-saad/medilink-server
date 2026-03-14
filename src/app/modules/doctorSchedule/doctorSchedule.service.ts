@@ -1,4 +1,5 @@
 import { DoctorSchedule, Prisma } from "../../../generated/prisma/client";
+import { NotFoundError } from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { TQueryParams } from "../../types/query.type";
 import { TRequestUser } from "../../types/requestUser.type";
@@ -29,8 +30,20 @@ const createMyDoctorSchedule = async (
     scheduleId,
   }));
 
-  const result = await prisma.doctorSchedule.createMany({
+  await prisma.doctorSchedule.createMany({
     data: doctorScheduleData,
+  });
+
+  const result = await prisma.doctorSchedule.findMany({
+    where: {
+      doctorId: doctorData.id,
+      scheduleId: {
+        in: payload.scheduleIds,
+      },
+    },
+    include: {
+      schedule: true,
+    },
   });
 
   return result;
@@ -98,6 +111,14 @@ const getAllDoctorSchedules = async (query: TQueryParams) => {
     .search()
     .filter()
     .paginate()
+    .include({
+      schedule: true,
+      doctor: {
+        include: {
+          user: true,
+        },
+      },
+    })
     .dynamicInclude(doctorScheduleIncludeConfig)
     .sort()
     .execute();
@@ -119,6 +140,11 @@ const getDoctorScheduleById = async (doctorId: string, scheduleId: string) => {
       doctor: true,
     },
   });
+
+  if (!doctorSchedule) {
+    throw new NotFoundError("Doctor schedule not found");
+  }
+
   return doctorSchedule;
 };
 
