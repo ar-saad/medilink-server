@@ -1,4 +1,5 @@
-import { uuidv7 } from "zod";
+// import { uuidv7 } from "zod";
+import { v7 as uuidv7 } from "uuid";
 import { prisma } from "../../lib/prisma";
 import { TRequestUser } from "../../types/requestUser.type";
 import { TCreateAppointmentPayload } from "./appointment.types";
@@ -89,7 +90,7 @@ const bookAppointment = async (
             product_data: {
               name: `Appointment with Dr. ${doctorData.name}`,
             },
-            unit_amount: doctorData.appointmentFee * 120, // usd to bdt conversion
+            unit_amount: doctorData.appointmentFee * 100, // usd to bdt conversion
           },
           quantity: 1,
         },
@@ -98,9 +99,9 @@ const bookAppointment = async (
         appointmentId: appointmentData.id,
         paymentId: paymentData.id,
       },
-      success_url: `${env.FRONTEND_URL}/dashboard/payment/payment-success`,
+      success_url: `${env.FRONTEND_URL}/dashboard/payment/payment-success?appointment_id=${appointmentData.id}&payment_id=${paymentData.id}`,
       // cancel_url: `${env.FRONTEND_URL}/dashboard/payment/payment-failed`,
-      cancel_url: `${env.FRONTEND_URL}/dashboard/appointments`,
+      cancel_url: `${env.FRONTEND_URL}/dashboard/appointments?error=payment_cancelled`,
     });
 
     return {
@@ -292,6 +293,10 @@ const bookAppointmentWithPayLater = async (
     },
   });
 
+  if (doctorScheduleData.isBooked) {
+    throw new BadRequestError("This schedule is already booked");
+  }
+
   const videoCallingId = String(uuidv7());
 
   const result = await prisma.$transaction(async (tx) => {
@@ -375,7 +380,7 @@ const initiatePayment = async (appointmentId: string, user: TRequestUser) => {
           product_data: {
             name: `Appointment with Dr. ${appointmentData.doctor.name}`,
           },
-          unit_amount: appointmentData.doctor.appointmentFee * 120, // usd to bdt conversion
+          unit_amount: appointmentData.doctor.appointmentFee * 100, // usd to bdt conversion
         },
         quantity: 1,
       },
