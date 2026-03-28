@@ -122,78 +122,85 @@ const createPrescription = async (
 
   const followUpDate = new Date(payload.followUpDate);
 
-  const prescription = await prisma.$transaction(async (tx) => {
-    const result = await tx.prescription.create({
-      data: {
-        ...payload,
-        followUpDate,
-        doctorId: doctor.id,
-        patientId: appointment.patientId,
-      },
-    });
-
-    const pdfBuffer = await generatePrescriptionPDF({
-      doctorName: doctor.name,
-      doctorEmail: doctor.email,
-      patientName: appointment.patient.name,
-      patientEmail: appointment.patient.email,
-      appointmentDate: appointment.schedule.startDateTime,
-      followUpDate: payload.followUpDate,
-      instructions: payload.instructions,
-      prescriptionId: result.id,
-      createdAt: new Date(),
-    });
-
-    const filename = `prescription-${Date.now()}.pdf`;
-    const uploadedFile = await uploadFileToCloudinary(pdfBuffer, filename);
-    const pdfUrl = uploadedFile.secure_url;
-
-    const updatedPrescription = await tx.prescription.update({
-      where: {
-        id: result.id,
-      },
-      data: {
-        pdfUrl,
-      },
-    });
-
-    try {
-      const patient = appointment.patient;
-      const doctor = appointment.doctor;
-
-      await sendEmail({
-        to: patient.email,
-        subject: `You have received a new prescription from Dr. ${doctor.name}`,
-        templateName: "prescription",
-        templateData: {
-          doctorName: doctor.name,
-          doctorEmail: doctor.email,
-          specialization: doctor.specialties
-            .map((s: any) => s.title)
-            .join(", "),
-          patientName: patient.name,
-          patientEmail: patient.email,
-          appointmentDate: appointment.schedule.startDateTime.toLocaleString(),
-          followUpDate: payload.followUpDate.toLocaleString(),
-          instructions: payload.instructions,
-          pdfUrl: pdfUrl,
-          issuedDate: new Date().toLocaleDateString(),
-          prescriptionId: result.id,
+  const prescription = await prisma.$transaction(
+    async (tx) => {
+      const result = await tx.prescription.create({
+        data: {
+          ...payload,
+          followUpDate,
+          doctorId: doctor.id,
+          patientId: appointment.patientId,
         },
-        attachments: [
-          {
-            filename: "prescription.pdf",
-            content: pdfBuffer,
-            contentType: "application/pdf",
-          },
-        ],
       });
-    } catch (error) {
-      console.error("Error sending prescription email:", error);
-    }
 
-    return updatedPrescription;
-  });
+      const pdfBuffer = await generatePrescriptionPDF({
+        doctorName: doctor.name,
+        doctorEmail: doctor.email,
+        patientName: appointment.patient.name,
+        patientEmail: appointment.patient.email,
+        appointmentDate: appointment.schedule.startDateTime,
+        followUpDate: followUpDate,
+        instructions: payload.instructions,
+        prescriptionId: result.id,
+        createdAt: new Date(),
+      });
+
+      const filename = `prescription-${Date.now()}.pdf`;
+      const uploadedFile = await uploadFileToCloudinary(pdfBuffer, filename);
+      const pdfUrl = uploadedFile.secure_url;
+
+      const updatedPrescription = await tx.prescription.update({
+        where: {
+          id: result.id,
+        },
+        data: {
+          pdfUrl,
+        },
+      });
+
+      try {
+        const patient = appointment.patient;
+        const doctor = appointment.doctor;
+
+        await sendEmail({
+          to: patient.email,
+          subject: `You have received a new prescription from Dr. ${doctor.name}`,
+          templateName: "prescription",
+          templateData: {
+            doctorName: doctor.name,
+            doctorEmail: doctor.email,
+            specialization: doctor.specialties
+              .map((s: any) => s.title)
+              .join(", "),
+            patientName: patient.name,
+            patientEmail: patient.email,
+            appointmentDate:
+              appointment.schedule.startDateTime.toLocaleString(),
+            followUpDate: payload.followUpDate.toLocaleString(),
+            instructions: payload.instructions,
+            pdfUrl: pdfUrl,
+            issuedDate: new Date().toLocaleDateString(),
+            prescriptionId: result.id,
+          },
+          attachments: [
+            {
+              filename: "prescription.pdf",
+              content: pdfBuffer,
+              contentType: "application/pdf",
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error sending prescription email:", error);
+      }
+
+      return updatedPrescription;
+    },
+    {
+      maxWait: 15000, // 15 seconds
+      timeout: 20000, // 20 seconds
+    },
+  );
 
   return prescription;
 };

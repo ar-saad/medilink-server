@@ -5,7 +5,7 @@ export const createPrescriptionSchema = z.object({
   instructions: z
     .string("Instructions is required")
     .min(1, "Instructions cannot be empty"),
-  followUpDate: z.date("Follow-up date must be a valid date"),
+  followUpDate: z.string("Follow-up date must be a valid date"),
 });
 
 export const updatePrescriptionSchema = z.object({
@@ -13,5 +13,5 @@ export const updatePrescriptionSchema = z.object({
     .string("Instructions is required")
     .min(1, "Instructions cannot be empty")
     .optional(),
-  followUpDate: z.date("Follow-up date must be a valid date").optional(),
+  followUpDate: z.string("Follow-up date must be a valid date").optional(),
 });
