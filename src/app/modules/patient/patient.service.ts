@@ -7,6 +7,7 @@ import {
 } from "./patient.types";
 import { convertToDateTime } from "./patient.utils";
 
+// PATCH | "/api/v1/patients/my-profile" | Update patient's own profile
 const updateMyProfile = async (
   user: TRequestUser,
   payload: TUpdatePatientProfilePayload,
@@ -113,6 +114,23 @@ const updateMyProfile = async (
   return result;
 };
 
+// GET | "/api/v1/patients/my-profile" | Get patient's own profile
+const getMyProfile = async (user: TRequestUser) => {
+  const result = await prisma.patient.findUnique({
+    where: {
+      email: user.email,
+    },
+    include: {
+      user: true,
+      patientHealthData: true,
+      medicalReports: true,
+    },
+  });
+
+  return result;
+};
+
 export const PatientService = {
   updateMyProfile,
+  getMyProfile,
 };

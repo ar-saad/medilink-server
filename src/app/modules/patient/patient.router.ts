@@ -9,9 +9,9 @@ import { attachUrlToPatientProfileUpdateRequestBody } from "./patient.middleware
 
 const router = Router();
 
-// PATCH | "/api/v1/patients/update-my-profile" | Update patient's own profile
+// PATCH | "/api/v1/patients/my-profile" | Update patient's own profile
 router.patch(
-  "/update-my-profile",
+  "/my-profile",
   checkAuth(UserRole.PATIENT),
   multerUpload.fields([
     { name: "profilePhoto", maxCount: 1 },
@@ -20,6 +20,13 @@ router.patch(
   attachUrlToPatientProfileUpdateRequestBody,
   validateRequest(updatePatientProfileSchema),
   PatientController.updateMyProfile,
+);
+
+// GET | "/api/v1/patients/my-profile" | Get patient's own profile
+router.get(
+  "/my-profile",
+  checkAuth(UserRole.PATIENT),
+  PatientController.getMyProfile,
 );
 
 export const PatientRouter = router;

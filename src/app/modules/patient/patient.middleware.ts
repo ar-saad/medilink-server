@@ -6,7 +6,11 @@ export const attachUrlToPatientProfileUpdateRequestBody = (
   res: Response,
   next: NextFunction,
 ) => {
-  const payload = req.body as TUpdatePatientProfilePayload;
+  if (req.body.data) {
+    req.body = JSON.parse(req.body.data);
+  }
+
+  const payload: TUpdatePatientProfilePayload = req.body;
 
   const files = req.files as {
     [fieldname: string]: Express.Multer.File[] | undefined;
@@ -26,7 +30,7 @@ export const attachUrlToPatientProfileUpdateRequestBody = (
       reportLink: file.path,
     }));
 
-    if (!payload.medicalReports && Array.isArray(payload.medicalReports)) {
+    if (payload.medicalReports && Array.isArray(payload.medicalReports)) {
       payload.medicalReports = [...payload.medicalReports, ...newReports];
     } else {
       payload.medicalReports = newReports;
