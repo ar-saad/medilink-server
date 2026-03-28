@@ -2,7 +2,10 @@ import { Router } from "express";
 import { UserRole } from "../../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { createPrescriptionSchema } from "./prescription.schema";
+import {
+  createPrescriptionSchema,
+  updatePrescriptionSchema,
+} from "./prescription.schema";
 import { PrescriptionController } from "./prescription.controller";
 
 const router = Router();
@@ -27,6 +30,21 @@ router.post(
   checkAuth(UserRole.DOCTOR),
   validateRequest(createPrescriptionSchema),
   PrescriptionController.createPrescription,
+);
+
+// PATCH | "/api/v1/prescriptions/:id" | Update prescription instructions or follow-up date (Doctor only)
+router.patch(
+  "/:id",
+  checkAuth(UserRole.DOCTOR),
+  validateRequest(updatePrescriptionSchema),
+  PrescriptionController.updatePrescription,
+);
+
+// DELETE | "/api/v1/prescriptions/:id" | Delete a prescription (Doctor only)
+router.delete(
+  "/:id",
+  checkAuth(UserRole.DOCTOR),
+  PrescriptionController.deletePrescription,
 );
 
 export const PrescriptionRouter = router;

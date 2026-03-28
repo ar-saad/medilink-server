@@ -47,8 +47,44 @@ const createPrescription = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// PATCH | "/api/v1/prescriptions/:id" | Update prescription instructions or follow-up date (Doctor only)
+const updatePrescription = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const prescriptionId = req.params.id;
+  const payload = req.body;
+
+  const result = await PrescriptionService.updatePrescription(
+    user,
+    prescriptionId as string,
+    payload,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Prescription updated successfully",
+    data: result,
+  });
+});
+
+// DELETE | "/api/v1/prescriptions/:id" | Delete a prescription (Doctor only)
+const deletePrescription = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const prescriptionId = req.params.id;
+
+  await PrescriptionService.deletePrescription(user, prescriptionId as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Prescription deleted successfully",
+  });
+});
+
 export const PrescriptionController = {
   createPrescription,
   myPrescriptions,
   getAllPrescriptions,
+  updatePrescription,
+  deletePrescription,
 };
