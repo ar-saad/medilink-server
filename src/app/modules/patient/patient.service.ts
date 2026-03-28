@@ -1,3 +1,4 @@
+import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
 import { NotFoundError } from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { TRequestUser } from "../../types/requestUser.type";
@@ -12,6 +13,8 @@ const updateMyProfile = async (
   user: TRequestUser,
   payload: TUpdatePatientProfilePayload,
 ) => {
+  // throw new Error("This is an intentional error for demonstration purposes.");
+
   const patientData = await prisma.patient.findUniqueOrThrow({
     where: {
       email: user.email,
@@ -82,11 +85,15 @@ const updateMyProfile = async (
     ) {
       for (const report of payload.medicalReports) {
         if (report.shouldDelete && report.reportId) {
-          await tx.medicalReport.delete({
+          const deletedReport = await tx.medicalReport.delete({
             where: {
               id: report.reportId,
             },
           });
+
+          if (deletedReport.reportLink) {
+            await deleteFileFromCloudinary(deletedReport.reportLink);
+          }
         } else if (report.reportName && report.reportLink) {
           await tx.medicalReport.create({
             data: {
