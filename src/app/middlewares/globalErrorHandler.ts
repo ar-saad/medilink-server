@@ -7,7 +7,11 @@ import { handleZodError } from "../errorHelpers/handleZodError";
 import { AppError } from "../errorHelpers/AppError";
 import { deleteUploadedFilesFromGlobalErrorHandler } from "../utils/deleteUploadedFilesFromGlobalErrorHandler";
 import { Prisma } from "../../generated/prisma/client";
-import { handlePrismaClientKnownRequestError } from "../errorHelpers/handlePrismaError";
+import {
+  handlePrismaClientKnownRequestError,
+  handlePrismaClientUnknownError,
+  handlePrismaClientValidationError,
+} from "../errorHelpers/handlePrismaError";
 
 export const globalErrorHandler = async (
   err: any,
@@ -28,7 +32,24 @@ export const globalErrorHandler = async (
   let stack: string | undefined = undefined;
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    // Handle known Prisma errors
     const simplifiedError = handlePrismaClientKnownRequestError(err);
+
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources = [...(simplifiedError.errorSources || [])];
+    stack = err.stack;
+  } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    // Handle unknown Prisma errors
+    const simplifiedError = handlePrismaClientUnknownError(err);
+
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources = [...(simplifiedError.errorSources || [])];
+    stack = err.stack;
+  } else if (err instanceof Prisma.PrismaClientValidationError) {
+    // Handle Prisma validation errors
+    const simplifiedError = handlePrismaClientValidationError(err);
 
     statusCode = simplifiedError.statusCode as number;
     message = simplifiedError.message;

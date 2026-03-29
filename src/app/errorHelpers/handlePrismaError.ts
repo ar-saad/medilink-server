@@ -139,3 +139,70 @@ export const handlePrismaClientKnownRequestError = (
     errorSources,
   };
 };
+
+export const handlePrismaClientUnknownError = (
+  error: Prisma.PrismaClientUnknownRequestError,
+): TErrorResponse => {
+  let message = error.message;
+
+  // Remove the "Invalid `prisma.user.create()` invocation: " part from the message for better readability
+  message = message.replace(/Invalid `.*?` invocation:?\s*/i, "");
+
+  const lines = message.split("\n").filter((line) => line.trim());
+  const mainMessage =
+    lines[0] || "An unknown error occurred with the database operation.";
+
+  const errorSources: TErrorSources[] = [
+    {
+      path: "Unknown Prisma Error",
+      message: mainMessage,
+    },
+  ];
+
+  return {
+    success: false,
+    statusCode: status.INTERNAL_SERVER_ERROR,
+    message: `Prisma Client Unknown Request Error: ${mainMessage}`,
+    errorSources,
+  };
+};
+
+export const handlePrismaClientValidationError = (
+  error: Prisma.PrismaClientValidationError,
+): TErrorResponse => {
+  let message = error.message;
+
+  // Remove the "Invalid `prisma.user.create()` invocation: " part from the message for better readability
+  message = message.replace(/Invalid `.*?` invocation:?\s*/i, "");
+
+  const lines = message.split("\n").filter((line) => line.trim());
+
+  const errorSources: TErrorSources[] = [];
+
+  // extract field name for field-specific validation errors
+  // Example message: "Argument `data.email`: Got invalid value `invalid-email` on prisma.user.create()"
+  const fieldMatch = message.match(/Argument `(\w+)`/i);
+  const fieldName = fieldMatch ? fieldMatch[1] : "Unknown Field";
+
+  //main message
+
+  const mainMessage =
+    lines.find(
+      (line) =>
+        !line.includes("Argument") && !line.includes("→") && line.length > 10,
+    ) ||
+    lines[0] ||
+    "Invalid query parameters provided to the database operation.";
+
+  errorSources.push({
+    path: fieldName,
+    message: mainMessage,
+  });
+
+  return {
+    success: false,
+    statusCode: status.BAD_REQUEST,
+    message: `Prisma Client Validation Error: ${mainMessage}`,
+    errorSources,
+  };
+};
