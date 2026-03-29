@@ -7,9 +7,11 @@ import { AdminRouter } from "../modules/admin/admin.router";
 import { ScheduleRouter } from "../modules/schedule/schedule.router";
 import { DoctorScheduleRouter } from "../modules/doctorSchedule/doctorSchedule.router";
 import { AppointmentRouter } from "../modules/appointment/appointment.router";
+import { PaymentRouter } from "../modules/payment/payment.router";
 import { PatientRouter } from "../modules/patient/patient.router";
 import { ReviewRouter } from "../modules/review/review.router";
 import { PrescriptionRouter } from "../modules/prescription/prescription.router";
+import { StatisticsRouter } from "../modules/statistics/statistics.router";
 
 const router = Router();
 
@@ -22,7 +24,9 @@ router.use("/admins", AdminRouter);
 router.use("/schedules", ScheduleRouter);
 router.use("/doctor-schedules", DoctorScheduleRouter);
 router.use("/appointments", AppointmentRouter);
+router.use("/payments", PaymentRouter);
 router.use("/reviews", ReviewRouter);
 router.use("/prescriptions", PrescriptionRouter);
+router.use("/statistics", StatisticsRouter);
 
 export const IndexRouter = router;
