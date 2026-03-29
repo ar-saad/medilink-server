@@ -5,7 +5,6 @@ import * as z from "zod";
 import { TErrorResponse, TErrorSources } from "../types/errorResponse.type";
 import { handleZodError } from "../errorHelpers/handleZodError";
 import { AppError } from "../errorHelpers/AppError";
-// import { deleteFileFromCloudinary } from "../config/cloudinary.config";
 import { deleteUploadedFilesFromGlobalErrorHandler } from "../utils/deleteUploadedFilesFromGlobalErrorHandler";
 
 export const globalErrorHandler = async (
@@ -19,17 +18,6 @@ export const globalErrorHandler = async (
   }
 
   // If there are uploaded files in the request, attempt to delete them from Cloudinary
-
-  // if (req.file) {
-  //   await deleteFileFromCloudinary(req.file.path);
-  // }
-
-  // if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-  //   const imageUrls = req.files.map((file) => file.path);
-
-  //   await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url)));
-  // }
-
   await deleteUploadedFilesFromGlobalErrorHandler(req);
 
   const errorSources: TErrorSources[] = [];
