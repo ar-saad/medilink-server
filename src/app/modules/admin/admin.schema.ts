@@ -1,5 +1,9 @@
 import * as z from "zod";
-import { Gender } from "../../../generated/prisma/browser";
+import {
+  Gender,
+  UserRole,
+  UserStatus,
+} from "../../../generated/prisma/browser";
 
 export const updateAdminSchema = z
   .object({
@@ -14,3 +18,17 @@ export const updateAdminSchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",
   });
+
+export const changeUserStatusSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  status: z.enum([UserStatus.ACTIVE, UserStatus.BLOCKED, UserStatus.DELETED], {
+    message: "Status must be one of 'ACTIVE', 'BLOCKED', or 'DELETED'",
+  }),
+});
+
+export const changeUserRoleSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  role: z.enum([UserRole.ADMIN, UserRole.SUPER_ADMIN], {
+    message: "Role must be either 'ADMIN' or 'SUPER_ADMIN'",
+  }),
+});

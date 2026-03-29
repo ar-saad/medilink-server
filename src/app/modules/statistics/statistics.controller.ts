@@ -5,6 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import status from "http-status";
 import { TRequestUser } from "../../types/requestUser.type";
 
+// GET | "/api/v1/statistics" | Get dashboard stats data based on user role
 const getDashboardStatsData = asyncHandler(
   async (req: Request, res: Response) => {
     const user: TRequestUser = req.user;

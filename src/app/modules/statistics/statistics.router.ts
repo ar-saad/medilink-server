@@ -5,6 +5,7 @@ import { StatisticsController } from "./statistics.controller";
 
 const router = Router();
 
+// GET | "/api/v1/statistics" | Get dashboard stats data based on user role
 router.get(
   "/",
   checkAuth(

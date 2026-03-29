@@ -1,7 +1,15 @@
-import { UserStatus } from "../../../generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { TUpdateAdminPayload } from "./admin.types";
-import { BadRequestError, NotFoundError } from "../../errorHelpers/AppError";
+import {
+  TChangeUserRolePayload,
+  TChangeUserStatusPayload,
+  TUpdateAdminPayload,
+} from "./admin.types";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../errorHelpers/AppError";
 import { TRequestUser } from "../../types/requestUser.type";
 
 // GET | "/api/v1/admins" | Get all admins
@@ -49,6 +57,110 @@ const updateAdmin = async (id: string, payload: TUpdateAdminPayload) => {
   });
 
   return updatedAdmin;
+};
+
+// PATCH | "/api/v1/admins/change-user-status" | Change user status (BLOCKED or ACTIVE)
+const changeUserStatus = async (
+  user: TRequestUser,
+  payload: TChangeUserStatusPayload,
+) => {
+  // 1. Super admin can change the status of any user except himself.
+  // 2. Admin can change the status of any user except super admin, another admin and of himself
+
+  const { userId, status } = payload;
+
+  const userToChangeStatus = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+  });
+
+  const isSelfStatusChange = user.id === userToChangeStatus.id;
+
+  // User cannot change their own status
+  if (isSelfStatusChange) {
+    throw new BadRequestError("You cannot change your own status");
+  }
+
+  // Admin cannot change the status of super admin
+  if (
+    user.role === UserRole.ADMIN &&
+    userToChangeStatus.role === UserRole.SUPER_ADMIN
+  ) {
+    throw new ForbiddenError("Admin cannot change the status of super admin");
+  }
+
+  // Admin cannot change the status of other admin
+  if (
+    user.role === UserRole.ADMIN &&
+    userToChangeStatus.role === UserRole.ADMIN
+  ) {
+    throw new ForbiddenError("Admin cannot change the status of other admin");
+  }
+
+  // The status cannot be changed to deleted. To delete a user, the role specific delete user endpoint must be used
+  if (status === UserStatus.DELETED) {
+    throw new BadRequestError(
+      "You cannot change the status to deleted. To delete a user, please use the role specific delete user endpoint",
+    );
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      status,
+    },
+  });
+
+  return updatedUser;
+};
+
+// PATCH | "/api/v1/admins/change-user-role" | Change user role (Super Admin only)
+const changeUserRole = async (
+  user: TRequestUser,
+  payload: TChangeUserRolePayload,
+) => {
+  // 1. Super Admin cannot change their own role.
+  // 2. Super admin can promote an admin to super admin and can demote a super admin to admin.
+  // 3. Role of Patient and Doctor user cannot be changed by anyone. If needed, they have to be deleted and re-created with the new role
+
+  const { userId, role } = payload;
+
+  const userToChangeRole = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+  });
+
+  const isSelfRoleChange = user.id === userToChangeRole.id;
+
+  // Super admin cannot change their own role
+  if (isSelfRoleChange) {
+    throw new BadRequestError("You cannot change your own role");
+  }
+
+  // Role of Patient and Doctor user cannot be changed by anyone. If needed, they have to be deleted and re-created with the new role
+  if (
+    userToChangeRole.role === UserRole.PATIENT ||
+    userToChangeRole.role === UserRole.DOCTOR
+  ) {
+    throw new BadRequestError(
+      "Role of Patient and Doctor user cannot be changed. If needed, please delete and re-create the user with the new role",
+    );
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      role,
+    },
+  });
+
+  return updatedUser;
 };
 
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID
@@ -108,5 +220,7 @@ export const AdminService = {
   getAllAdmins,
   getAdminById,
   updateAdmin,
+  changeUserStatus,
+  changeUserRole,
   deleteAdmin,
 };

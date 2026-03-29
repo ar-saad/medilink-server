@@ -3,6 +3,7 @@ import { BadRequestError } from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { TRequestUser } from "../../types/requestUser.type";
 
+// GET | "/api/v1/statistics" | Get dashboard stats data based on user role
 const getDashboardStatsData = async (user: TRequestUser) => {
   let statsData;
 

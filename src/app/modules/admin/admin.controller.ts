@@ -4,6 +4,10 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/sendResponse";
 import { AdminService } from "./admin.service";
 import { TRequestUser } from "../../types/requestUser.type";
+import {
+  TChangeUserRolePayload,
+  TChangeUserStatusPayload,
+} from "./admin.types";
 
 // GET | "/api/v1/admins" | Get all admins
 const getAllAdmins = asyncHandler(async (req: Request, res: Response) => {
@@ -46,6 +50,36 @@ const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// PATCH | "/api/v1/admins/change-user-status" | Change user status
+const changeUserStatus = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user as TRequestUser;
+  const payload = req.body as TChangeUserStatusPayload;
+
+  const result = await AdminService.changeUserStatus(user, payload);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User status updated successfully",
+    data: result,
+  });
+});
+
+// PATCH | "/api/v1/admins/change-user-role" | Change user role (Super Admin only)
+const changeUserRole = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user as TRequestUser;
+  const payload = req.body as TChangeUserRolePayload;
+
+  const result = await AdminService.changeUserRole(user, payload);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User role updated successfully",
+    data: result,
+  });
+});
+
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID
 const deleteAdmin = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -64,6 +98,8 @@ const deleteAdmin = asyncHandler(async (req: Request, res: Response) => {
 export const AdminController = {
   getAllAdmins,
   updateAdmin,
-  deleteAdmin,
   getAdminById,
+  changeUserStatus,
+  changeUserRole,
+  deleteAdmin,
 };
