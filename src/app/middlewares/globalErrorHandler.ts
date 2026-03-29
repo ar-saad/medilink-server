@@ -6,6 +6,8 @@ import { TErrorResponse, TErrorSources } from "../types/errorResponse.type";
 import { handleZodError } from "../errorHelpers/handleZodError";
 import { AppError } from "../errorHelpers/AppError";
 import { deleteUploadedFilesFromGlobalErrorHandler } from "../utils/deleteUploadedFilesFromGlobalErrorHandler";
+import { Prisma } from "../../generated/prisma/client";
+import { handlePrismaClientKnownRequestError } from "../errorHelpers/handlePrismaError";
 
 export const globalErrorHandler = async (
   err: any,
@@ -20,18 +22,25 @@ export const globalErrorHandler = async (
   // If there are uploaded files in the request, attempt to delete them from Cloudinary
   await deleteUploadedFilesFromGlobalErrorHandler(req);
 
-  const errorSources: TErrorSources[] = [];
+  let errorSources: TErrorSources[] = [];
   let statusCode: number = status.INTERNAL_SERVER_ERROR;
   let message: string = "Internal server error";
   let stack: string | undefined = undefined;
 
-  // Handle Zod validation errors
-  if (err instanceof z.ZodError) {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    const simplifiedError = handlePrismaClientKnownRequestError(err);
+
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources = [...(simplifiedError.errorSources || [])];
+    stack = err.stack;
+  } else if (err instanceof z.ZodError) {
+    // Handle Zod validation errors
     const simplifiedError = handleZodError(err);
 
     statusCode = simplifiedError.statusCode as number;
     message = simplifiedError.message;
-    errorSources.push(...(simplifiedError.errorSources || []));
+    errorSources = [...(simplifiedError.errorSources || [])];
     stack = err.stack;
   } else if (err instanceof AppError) {
     // Handle custom application errors

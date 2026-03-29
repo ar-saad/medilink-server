@@ -1,4 +1,6 @@
 import status from "http-status";
+import { Prisma } from "../../generated/prisma/client";
+import { TErrorResponse, TErrorSources } from "../types/errorResponse.type";
 
 const getStatusCodeFromPrismaError = (errorCode: string): number => {
   // P2002: Unique constraint failed
@@ -102,4 +104,38 @@ const formatPrismaErrorMeta = (meta?: Record<string, unknown>): string => {
   return parts.length > 0 ? parts.join(" | ") : "";
 };
 
-export const handlePrismaClientKnownRequestError = (error: any) => {};
+export const handlePrismaClientKnownRequestError = (
+  error: Prisma.PrismaClientKnownRequestError,
+): TErrorResponse => {
+  const statusCode = getStatusCodeFromPrismaError(error.code);
+  const metaInfo = formatPrismaErrorMeta(error.meta);
+
+  let message = error.message;
+  // Remove the "Invalid `prisma.user.create()` invocation: " part from the message for better readability
+  message = message.replace(/Invalid `.*?` invocation:?\s*/i, "");
+
+  // Split by new line and take the first line as the main message
+  const lines = message.split("\n").filter((line) => line.trim());
+  message = lines[0] || "An error occurred with the database operation.";
+
+  const errorSources: TErrorSources[] = [
+    {
+      path: error.code,
+      message: metaInfo ? `${message} | ${metaInfo}` : message,
+    },
+  ];
+
+  if (error.meta?.cause) {
+    errorSources.push({
+      path: "cause",
+      message: String(error.meta.cause),
+    });
+  }
+
+  return {
+    statusCode,
+    success: false,
+    message,
+    errorSources,
+  };
+};
