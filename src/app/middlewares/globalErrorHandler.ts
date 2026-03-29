@@ -9,8 +9,10 @@ import { deleteUploadedFilesFromGlobalErrorHandler } from "../utils/deleteUpload
 import { Prisma } from "../../generated/prisma/client";
 import {
   handlePrismaClientKnownRequestError,
-  handlePrismaClientUnknownError,
+  handlePrismaClientUnknownRequestError,
   handlePrismaClientValidationError,
+  handlePrismaClientInitializationError,
+  handlePrismaClientRustPanicError,
 } from "../errorHelpers/handlePrismaError";
 
 export const globalErrorHandler = async (
@@ -41,7 +43,7 @@ export const globalErrorHandler = async (
     stack = err.stack;
   } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
     // Handle unknown Prisma errors
-    const simplifiedError = handlePrismaClientUnknownError(err);
+    const simplifiedError = handlePrismaClientUnknownRequestError(err);
 
     statusCode = simplifiedError.statusCode as number;
     message = simplifiedError.message;
@@ -50,6 +52,22 @@ export const globalErrorHandler = async (
   } else if (err instanceof Prisma.PrismaClientValidationError) {
     // Handle Prisma validation errors
     const simplifiedError = handlePrismaClientValidationError(err);
+
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources = [...(simplifiedError.errorSources || [])];
+    stack = err.stack;
+  } else if (err instanceof Prisma.PrismaClientInitializationError) {
+    // Handle Prisma initialization errors
+    const simplifiedError = handlePrismaClientInitializationError(err);
+
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources = [...(simplifiedError.errorSources || [])];
+    stack = err.stack;
+  } else if (err instanceof Prisma.PrismaClientRustPanicError) {
+    // Handle Prisma Rust panic errors
+    const simplifiedError = handlePrismaClientRustPanicError();
 
     statusCode = simplifiedError.statusCode as number;
     message = simplifiedError.message;

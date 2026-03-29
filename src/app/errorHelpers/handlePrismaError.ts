@@ -111,17 +111,19 @@ export const handlePrismaClientKnownRequestError = (
   const metaInfo = formatPrismaErrorMeta(error.meta);
 
   let message = error.message;
+
   // Remove the "Invalid `prisma.user.create()` invocation: " part from the message for better readability
   message = message.replace(/Invalid `.*?` invocation:?\s*/i, "");
 
-  // Split by new line and take the first line as the main message
+  // split by new line and take the first line as the main message, rest can be added to error sources
   const lines = message.split("\n").filter((line) => line.trim());
-  message = lines[0] || "An error occurred with the database operation.";
+  const mainMessage =
+    lines[0] || "An error occurred with the database operation.";
 
   const errorSources: TErrorSources[] = [
     {
       path: error.code,
-      message: metaInfo ? `${message} | ${metaInfo}` : message,
+      message: metaInfo ? `${mainMessage} | ${metaInfo}` : mainMessage,
     },
   ];
 
@@ -133,14 +135,14 @@ export const handlePrismaClientKnownRequestError = (
   }
 
   return {
-    statusCode,
     success: false,
-    message,
+    statusCode,
+    message: `Prisma Client Known Request Error: ${mainMessage}`,
     errorSources,
   };
 };
 
-export const handlePrismaClientUnknownError = (
+export const handlePrismaClientUnknownRequestError = (
   error: Prisma.PrismaClientUnknownRequestError,
 ): TErrorResponse => {
   let message = error.message;
@@ -203,6 +205,55 @@ export const handlePrismaClientValidationError = (
     success: false,
     statusCode: status.BAD_REQUEST,
     message: `Prisma Client Validation Error: ${mainMessage}`,
+    errorSources,
+  };
+};
+
+export const handlePrismaClientInitializationError = (
+  error: Prisma.PrismaClientInitializationError,
+): TErrorResponse => {
+  const statusCode = error.errorCode
+    ? getStatusCodeFromPrismaError(error.errorCode)
+    : status.SERVICE_UNAVAILABLE;
+
+  let message = error.message;
+
+  message = message.replace(/Invalid `.*?` invocation:?\s*/i, "");
+
+  const lines = message.split("\n").filter((line) => line.trim());
+
+  const mainMessage =
+    lines[0] || "An error occurred while initializing the Prisma Client.";
+
+  const errorSources: TErrorSources[] = [
+    {
+      path: error.errorCode || "Initialization Error",
+      message: mainMessage,
+    },
+  ];
+
+  return {
+    success: false,
+    statusCode,
+    message: `Prisma Client Initialization Error: ${mainMessage}`,
+    errorSources,
+  };
+};
+
+export const handlePrismaClientRustPanicError = (): TErrorResponse => {
+  const errorSources: TErrorSources[] = [
+    {
+      path: "Rust Engine Crashed",
+      message:
+        "The database engine encountered a fatal error and crashed. This is usually due to an internal bug in the Prisma engine or an unexpected edge case in the database operation. Please check the Prisma logs for more details and consider reporting this issue to the Prisma team if it persists.",
+    },
+  ];
+
+  return {
+    success: false,
+    statusCode: status.INTERNAL_SERVER_ERROR,
+    message:
+      "Prisma Client Rust Panic Error: The database engine crashed due to a fatal error.",
     errorSources,
   };
 };
