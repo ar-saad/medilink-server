@@ -99,17 +99,17 @@ All endpoints (except auth) require JWT or session authentication.
 
 | Module             | Endpoint                                   | Purpose                        |
 | ------------------ | ------------------------------------------ | ------------------------------ |
-| **Auth**           | `/api/auth`                                | Login, registration, OAuth     |
-| **Specialties**    | `/api/specialties`                         | Medical specialties            |
-| **Patients**       | `/api/patients`                            | Patient profiles & health data |
-| **Doctors**        | `/api/doctors`                             | Doctor profiles & info         |
-| **Appointments**   | `/api/appointments`                        | Book & manage appointments     |
-| **Schedules**      | `/api/schedules` & `/api/doctor-schedules` | Availability management        |
-| **Payments**       | `/api/payments`                            | Process payments               |
-| **Prescriptions**  | `/api/prescriptions`                       | Manage prescriptions           |
-| **Reviews**        | `/api/reviews`                             | Doctor ratings & reviews       |
-| **Statistics**     | `/api/statistics`                          | System analytics               |
-| **Users & Admins** | `/api/users`, `/api/admins`                | User management                |
+| **Auth**           | `/api/v1/auth`                                | Login, registration, OAuth     |
+| **Specialties**    | `/api/v1/specialties`                         | Medical specialties            |
+| **Patients**       | `/api/v1/patients`                            | Patient profiles & health data |
+| **Doctors**        | `/api/v1/doctors`                             | Doctor profiles & info         |
+| **Appointments**   | `/api/v1/appointments`                        | Book & manage appointments     |
+| **Schedules**      | `/api/v1/schedules` & `/api/v1/doctor-schedules` | Availability management        |
+| **Payments**       | `/api/v1/payments`                            | Process payments               |
+| **Prescriptions**  | `/api/v1/prescriptions`                       | Manage prescriptions           |
+| **Reviews**        | `/api/v1/reviews`                             | Doctor ratings & reviews       |
+| **Statistics**     | `/api/v1/statistics`                          | System analytics               |
+| **Users & Admins** | `/api/v1/users`, `/api/v1/admins`                | User management                |
 
 **Webhooks**:
 
