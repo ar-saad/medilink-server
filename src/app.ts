@@ -12,6 +12,7 @@ import qs from "qs";
 import { PaymentController } from "./app/modules/payment/payment.controller";
 import cron from "node-cron";
 import { AppointmentService } from "./app/modules/appointment/appointment.service";
+import { requestLogger } from "./app/middlewares/requestLogger";
 
 const app: Application = express();
 
@@ -54,6 +55,9 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(cookieParser());
+
+// Request logging middleware
+app.use(requestLogger);
 
 // Cron job to cancel unpaid appointments every 25 minutes
 cron.schedule("*/25 * * * *", async () => {

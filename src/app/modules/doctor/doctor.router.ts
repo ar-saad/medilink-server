@@ -8,11 +8,7 @@ import { UserRole } from "../../../generated/prisma/enums";
 const router: Router = Router();
 
 // GET | "/api/v1/doctors" | Get all doctors
-router.get(
-  "/",
-  checkAuth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  DoctorController.getAllDoctors,
-);
+router.get("/", DoctorController.getAllDoctors);
 // GET | "/api/v1/doctors/:id" | Get doctor by ID
 router.get(
   "/:id",
