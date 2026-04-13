@@ -187,9 +187,7 @@ const getPieChartData = async () => {
     count: item._count.id,
   }));
 
-  return {
-    pieChartData: formattedPieChartData,
-  };
+  return formattedPieChartData;
 };
 
 const getBarChartData = async () => {
