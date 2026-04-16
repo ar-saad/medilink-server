@@ -13,22 +13,6 @@ import { TUpdateDoctorPayload } from "./doctor.types";
 
 // GET | "/api/v1/doctors" | Get all doctors
 const getAllDoctors = async (query: TQueryParams) => {
-  // const doctors = await prisma.doctor.findMany({
-  //   where: {
-  //     isDeleted: false,
-  //   },
-  //   include: {
-  //     user: true,
-  //     specialties: {
-  //       include: {
-  //         specialty: true,
-  //       },
-  //     },
-  //   },
-  // });
-
-  // return doctors;
-
   const queryBuilder = new QueryBuilder<
     Doctor,
     Prisma.DoctorWhereInput,
@@ -46,6 +30,11 @@ const getAllDoctors = async (query: TQueryParams) => {
     })
     .include({
       user: true,
+      specialties: {
+        include: {
+          specialty: true,
+        },
+      },
     })
     .dynamicInclude(doctorIncludeConfig)
     .paginate()
