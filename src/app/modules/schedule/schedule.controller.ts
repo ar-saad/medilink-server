@@ -27,7 +27,8 @@ const getAllSchedules = asyncHandler(async (req: Request, res: Response) => {
     statusCode: status.OK,
     success: true,
     message: "Schedules retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

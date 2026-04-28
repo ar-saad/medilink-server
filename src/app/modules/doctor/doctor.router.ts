@@ -10,11 +10,7 @@ const router: Router = Router();
 // GET | "/api/v1/doctors" | Get all doctors
 router.get("/", DoctorController.getAllDoctors);
 // GET | "/api/v1/doctors/:id" | Get doctor by ID
-router.get(
-  "/:id",
-  checkAuth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  DoctorController.getDoctorById,
-);
+router.get("/:id", DoctorController.getDoctorById);
 // PATCH | "/api/v1/doctors/:id" | Update doctor by ID
 router.patch(
   "/:id",
