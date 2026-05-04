@@ -14,13 +14,14 @@ const router: Router = Router();
 // POST | "/api/v1/users/create-doctor" | Create a new doctor user
 router.post(
   "/create-doctor",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(createDoctorSchema),
   UserController.createDoctor,
 );
 // POST | "/api/v1/users/create-admin" | Create a new admin user (requires SUPER_ADMIN role)
 router.post(
   "/create-admin",
-  // checkAuth(UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.SUPER_ADMIN),
   validateRequest(createAdminSchema),
   UserController.createAdmin,
 );

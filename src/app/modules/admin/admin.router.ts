@@ -14,6 +14,20 @@ router.get(
   AdminController.getAllAdmins,
 );
 
+// PATCH | "/api/v1/admins/change-user-status" | Change user status (BLOCKED or ACTIVE)
+router.patch(
+  "/change-user-status",
+  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  AdminController.changeUserStatus,
+);
+
+// PATCH | "/api/v1/admins/change-user-role" | Change user role (Super Admin only)
+router.patch(
+  "/change-user-role",
+  checkAuth(UserRole.SUPER_ADMIN),
+  AdminController.changeUserRole,
+);
+
 // GET | "/api/v1/admins/:id" | Get admin by ID
 router.get(
   "/:id",
@@ -27,20 +41,6 @@ router.patch(
   checkAuth(UserRole.SUPER_ADMIN),
   validateRequest(updateAdminSchema),
   AdminController.updateAdmin,
-);
-
-// PATCH | "/api/v1/admins/change-user-status" | Change user status (BLOCKED or ACTIVE)
-router.patch(
-  "/change-user-status",
-  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  AdminController.changeUserStatus,
-);
-
-// PATCH | "/api/v1/admins/change-user-role" | Change user role (Super Admin only)
-router.patch(
-  "/change-user-role",
-  checkAuth(UserRole.SUPER_ADMIN),
-  AdminController.changeUserRole,
 );
 
 // DELETE | "/api/v1/admins/:id" | Soft delete admin by ID

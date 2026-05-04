@@ -45,27 +45,42 @@ const bookAppointment = async (
     },
   });
 
+  if (doctorScheduleData.isBooked) {
+    throw new BadRequestError("This schedule is already booked");
+  }
+
+  const now = new Date();
+  if (scheduleData.startDateTime <= now) {
+    throw new BadRequestError(
+      "You can only book appointments for future schedules",
+    );
+  }
+
   const videoCallingId = String(uuidv7());
 
   const result = await prisma.$transaction(async (tx) => {
+    // Atomic slot reservation: only succeeds if slot is still not booked.
+    const reserved = await tx.doctorSchedule.updateMany({
+      where: {
+        doctorId: doctorData.id,
+        scheduleId: scheduleData.id,
+        isBooked: false,
+      },
+      data: {
+        isBooked: true,
+      },
+    });
+
+    if (reserved.count !== 1) {
+      throw new BadRequestError("This schedule was just booked by someone else");
+    }
+
     const appointmentData = await tx.appointment.create({
       data: {
         doctorId: doctorData.id,
         patientId: patientData.id,
         scheduleId: doctorScheduleData.scheduleId,
         videoCallingId,
-      },
-    });
-
-    await tx.doctorSchedule.update({
-      where: {
-        doctorId_scheduleId: {
-          doctorId: doctorData.id,
-          scheduleId: scheduleData.id,
-        },
-      },
-      data: {
-        isBooked: true,
       },
     });
 
@@ -342,27 +357,38 @@ const bookAppointmentWithPayLater = async (
     throw new BadRequestError("This schedule is already booked");
   }
 
+  const now = new Date();
+  if (scheduleData.startDateTime <= now) {
+    throw new BadRequestError(
+      "You can only book appointments for future schedules",
+    );
+  }
+
   const videoCallingId = String(uuidv7());
 
   const result = await prisma.$transaction(async (tx) => {
+    // Atomic slot reservation: only succeeds if slot is still not booked.
+    const reserved = await tx.doctorSchedule.updateMany({
+      where: {
+        doctorId: doctorData.id,
+        scheduleId: scheduleData.id,
+        isBooked: false,
+      },
+      data: {
+        isBooked: true,
+      },
+    });
+
+    if (reserved.count !== 1) {
+      throw new BadRequestError("This schedule was just booked by someone else");
+    }
+
     const appointmentData = await tx.appointment.create({
       data: {
         doctorId: doctorData.id,
         patientId: patientData.id,
         scheduleId: doctorScheduleData.scheduleId,
         videoCallingId,
-      },
-    });
-
-    await tx.doctorSchedule.update({
-      where: {
-        doctorId_scheduleId: {
-          doctorId: doctorData.id,
-          scheduleId: scheduleData.id,
-        },
-      },
-      data: {
-        isBooked: true,
       },
     });
 

@@ -1,5 +1,5 @@
 import { DoctorSchedule, Prisma } from "../../../generated/prisma/client";
-import { NotFoundError } from "../../errorHelpers/AppError";
+import { BadRequestError, NotFoundError } from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { TQueryParams } from "../../types/query.type";
 import { TRequestUser } from "../../types/requestUser.type";
@@ -25,20 +25,70 @@ const createMyDoctorSchedule = async (
     },
   });
 
-  const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
+  const requestedIds = Array.from(new Set(payload.scheduleIds));
+
+  if (requestedIds.length === 0) {
+    throw new BadRequestError("At least one schedule must be selected");
+  }
+
+  // Validate all schedules exist and are in the future
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      id: { in: requestedIds },
+    },
+  });
+
+  if (schedules.length !== requestedIds.length) {
+    throw new NotFoundError("One or more schedules were not found");
+  }
+
+  const now = new Date();
+  const expiredSchedule = schedules.find(
+    (schedule) => schedule.startDateTime <= now,
+  );
+
+  if (expiredSchedule) {
+    throw new BadRequestError(
+      "You can only book schedules with a start time in the future",
+    );
+  }
+
+  // Skip schedules already assigned to this doctor (idempotent)
+  const existingAssignments = await prisma.doctorSchedule.findMany({
+    where: {
+      doctorId: doctorData.id,
+      scheduleId: { in: requestedIds },
+    },
+    select: { scheduleId: true },
+  });
+
+  const alreadyAssigned = new Set(
+    existingAssignments.map((item) => item.scheduleId),
+  );
+
+  const newScheduleIds = requestedIds.filter((id) => !alreadyAssigned.has(id));
+
+  if (newScheduleIds.length === 0) {
+    throw new BadRequestError(
+      "All selected schedules are already in your list",
+    );
+  }
+
+  const doctorScheduleData = newScheduleIds.map((scheduleId) => ({
     doctorId: doctorData.id,
     scheduleId,
   }));
 
   await prisma.doctorSchedule.createMany({
     data: doctorScheduleData,
+    skipDuplicates: true,
   });
 
   const result = await prisma.doctorSchedule.findMany({
     where: {
       doctorId: doctorData.id,
       scheduleId: {
-        in: payload.scheduleIds,
+        in: newScheduleIds,
       },
     },
     include: {
