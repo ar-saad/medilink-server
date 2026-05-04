@@ -1,4 +1,4 @@
-import { UserRole } from "../../../generated/prisma/enums";
+import { AppointmentStatus, UserRole } from "../../../generated/prisma/enums";
 import {
   deleteFileFromCloudinary,
   uploadFileToCloudinary,
@@ -155,6 +155,15 @@ const createPrescription = async (
         },
         data: {
           pdfUrl,
+        },
+      });
+
+      await tx.appointment.update({
+        where: {
+          id: payload.appointmentId,
+        },
+        data: {
+          status: AppointmentStatus.COMPLETED,
         },
       });
 

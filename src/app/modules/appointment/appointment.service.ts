@@ -179,13 +179,58 @@ const changeAppointmentStatus = async (
     },
     include: {
       doctor: true,
+      patient: true,
     },
   });
+
+  // 1. Completed Or Cancelled Appointments should not be allowed to update status
+  if (
+    appointmentData.status === AppointmentStatus.COMPLETED ||
+    appointmentData.status === AppointmentStatus.CANCELED
+  ) {
+    throw new BadRequestError(
+      `Cannot update status of a ${appointmentData.status.toLowerCase()} appointment`,
+    );
+  }
 
   if (user?.role === UserRole.DOCTOR) {
     if (!(user?.email === appointmentData.doctor.email))
       throw new BadRequestError("This is not your appointment");
+
+    // 2. Doctors can only update Appointment status from schedule to inprogress or inprogress to completed or schedule to cancelled.
+    const allowedTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
+      [AppointmentStatus.SCHEDULED]: [
+        AppointmentStatus.IN_PROGRESS,
+        AppointmentStatus.CANCELED,
+      ],
+      [AppointmentStatus.IN_PROGRESS]: [AppointmentStatus.COMPLETED],
+      [AppointmentStatus.COMPLETED]: [],
+      [AppointmentStatus.CANCELED]: [],
+    };
+
+    if (
+      !allowedTransitions[appointmentData.status].includes(appointmentStatus)
+    ) {
+      throw new BadRequestError(
+        `Doctor cannot change status from ${appointmentData.status} to ${appointmentStatus}`,
+      );
+    }
+  } else if (user?.role === UserRole.PATIENT) {
+    if (!(user?.email === appointmentData.patient.email))
+      throw new BadRequestError("This is not your appointment");
+
+    // 3. Patients can only cancel the scheduled appointment if it scheduled not completed or cancelled or inprogress.
+    if (appointmentStatus === AppointmentStatus.CANCELED) {
+      if (appointmentData.status !== AppointmentStatus.SCHEDULED) {
+        throw new BadRequestError(
+          "You can only cancel a scheduled appointment",
+        );
+      }
+    } else {
+      throw new BadRequestError("Patients can only cancel appointments");
+    }
   }
+  // 4. Admin and Super admin can update to any status (already handled by falling through)
 
   return await prisma.appointment.update({
     where: {

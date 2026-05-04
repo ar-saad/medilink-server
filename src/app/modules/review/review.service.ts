@@ -27,6 +27,12 @@ const createReview = async (
     );
   }
 
+  if (appointment.status !== "COMPLETED") {
+    throw new BadRequestError(
+      "You can only review an appointment after it is completed",
+    );
+  }
+
   if (appointment.patientId !== patient.id) {
     throw new BadRequestError("You can only review your own appointments");
   }
