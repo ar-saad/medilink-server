@@ -41,7 +41,10 @@ const updateSpecialty = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body as TUpdateSpecialtyPayload;
 
-  const result = await SpecialtyService.updateSpecialty(id as string, payload);
+  const result = await SpecialtyService.updateSpecialty(id as string, {
+    ...payload,
+    icon: req.file?.path,
+  });
 
   sendResponse(res, {
     statusCode: 200,

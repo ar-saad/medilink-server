@@ -27,6 +27,7 @@ router.get("/", SpecialtyController.getAllSpecialties);
 router.patch(
   "/:id",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  multerUpload.single("file"),
   validateRequest(updateSpecialtySchema),
   SpecialtyController.updateSpecialty,
 );
