@@ -5,6 +5,8 @@ import { updateDoctorSchema } from "./doctor.schema";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 
+import { multerUpload } from "../../config/multer.config";
+
 const router: Router = Router();
 
 // GET | "/api/v1/doctors" | Get all doctors
@@ -15,6 +17,7 @@ router.get("/:id", DoctorController.getDoctorById);
 router.patch(
   "/:id",
   checkAuth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  multerUpload.fields([{ name: "profilePhoto", maxCount: 1 }]),
   validateRequest(updateDoctorSchema),
   DoctorController.updateDoctor,
 );

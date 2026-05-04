@@ -95,7 +95,7 @@ const updateDoctor = async (id: string, payload: TUpdateDoctorPayload) => {
 
   await prisma.$transaction(async (tx) => {
     // Update doctor basic information
-    await tx.doctor.update({
+    const updatedDoctor = await tx.doctor.update({
       where: { id },
       data: doctorData,
       include: {
@@ -106,6 +106,17 @@ const updateDoctor = async (id: string, payload: TUpdateDoctorPayload) => {
         },
       },
     });
+
+    // Sync user model
+    if (doctorData.name || doctorData.profilePhoto) {
+      await tx.user.update({
+        where: { id: updatedDoctor.userId },
+        data: {
+          name: doctorData.name || updatedDoctor.name,
+          image: doctorData.profilePhoto || updatedDoctor.profilePhoto,
+        },
+      });
+    }
 
     // If specialties are provided, update them separately
     if (specialties && specialties.length > 0) {

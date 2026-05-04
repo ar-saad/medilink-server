@@ -10,6 +10,33 @@ const updateMyProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user as TRequestUser;
   const payload = req.body;
 
+  const files = req.files as {
+    [fieldname: string]: Express.Multer.File[] | undefined;
+  };
+
+  // Handle profile photo
+  if (files?.profilePhoto?.[0]) {
+    if (!payload.patientInfo) {
+      payload.patientInfo = {};
+    }
+    payload.patientInfo.profilePhoto = files.profilePhoto[0].path;
+  }
+
+  // Handle medical reports
+  if (files?.medicalReports && files?.medicalReports.length > 0) {
+    const newReports = files.medicalReports.map((file) => ({
+      reportName:
+        file.originalname || `Medical Report - ${new Date().getTime()}`,
+      reportLink: file.path,
+    }));
+
+    if (payload.medicalReports && Array.isArray(payload.medicalReports)) {
+      payload.medicalReports = [...payload.medicalReports, ...newReports];
+    } else {
+      payload.medicalReports = newReports;
+    }
+  }
+
   const result = await PatientService.updateMyProfile(user, payload);
 
   sendResponse(res, {
