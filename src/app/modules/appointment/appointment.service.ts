@@ -157,6 +157,9 @@ const getMyAppointments = async (user: TRequestUser) => {
       include: {
         doctor: true,
         schedule: true,
+        review: true,
+        payment: true,
+        prescription: true,
       },
     });
   } else if (doctorData) {
@@ -167,6 +170,8 @@ const getMyAppointments = async (user: TRequestUser) => {
       include: {
         patient: true,
         schedule: true,
+        review: true,
+        payment: true,
       },
     });
   } else {
@@ -211,10 +216,11 @@ const changeAppointmentStatus = async (
     if (!(user?.email === appointmentData.doctor.email))
       throw new BadRequestError("This is not your appointment");
 
-    // 2. Doctors can only update Appointment status from schedule to inprogress or inprogress to completed or schedule to cancelled.
+    // 2. Doctors can only update Appointment status from schedule to inprogress, schedule to completed, inprogress to completed or schedule to cancelled.
     const allowedTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
       [AppointmentStatus.SCHEDULED]: [
         AppointmentStatus.IN_PROGRESS,
+        AppointmentStatus.COMPLETED,
         AppointmentStatus.CANCELED,
       ],
       [AppointmentStatus.IN_PROGRESS]: [AppointmentStatus.COMPLETED],
@@ -284,6 +290,9 @@ const getMySingleAppointment = async (
       include: {
         doctor: true,
         schedule: true,
+        review: true,
+        payment: true,
+        prescription: true,
       },
     });
   } else if (doctorData) {
@@ -295,6 +304,9 @@ const getMySingleAppointment = async (
       include: {
         patient: true,
         schedule: true,
+        review: true,
+        payment: true,
+        prescription: true,
       },
     });
   }
@@ -314,6 +326,9 @@ const getAllAppointments = async () => {
       doctor: true,
       patient: true,
       schedule: true,
+      review: true,
+      payment: true,
+      prescription: true,
     },
   });
   return appointments;

@@ -32,6 +32,22 @@ const myPrescriptions = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// GET | "/api/v1/prescriptions/:appointmentId" | Get prescription by appointment ID
+const getPrescriptionByAppointmentId = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { appointmentId } = req.params;
+    const result =
+      await PrescriptionService.getPrescriptionByAppointmentId(appointmentId);
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "Prescription fetched successfully",
+      data: result,
+    });
+  },
+);
+
 // POST | "/api/v1/prescriptions" | Create a new prescription for an appointment
 const createPrescription = asyncHandler(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -84,6 +100,7 @@ const deletePrescription = asyncHandler(async (req: Request, res: Response) => {
 export const PrescriptionController = {
   createPrescription,
   myPrescriptions,
+  getPrescriptionByAppointmentId,
   getAllPrescriptions,
   updatePrescription,
   deletePrescription,

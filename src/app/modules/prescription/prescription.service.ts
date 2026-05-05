@@ -72,6 +72,22 @@ const myPrescriptions = async (user: TRequestUser) => {
   }
 };
 
+// GET | "/api/v1/prescriptions/:appointmentId" | Get prescription by appointment ID
+const getPrescriptionByAppointmentId = async (appointmentId: string) => {
+  const result = await prisma.prescription.findUnique({
+    where: {
+      appointmentId,
+    },
+    include: {
+      patient: true,
+      doctor: true,
+      appointment: true,
+    },
+  });
+
+  return result;
+};
+
 // POST | "/api/v1/prescriptions" | Create a new prescription for an appointment
 const createPrescription = async (
   user: TRequestUser,
@@ -398,4 +414,5 @@ export const PrescriptionService = {
   getAllPrescriptions,
   updatePrescription,
   deletePrescription,
+  getPrescriptionByAppointmentId,
 };

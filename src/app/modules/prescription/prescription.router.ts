@@ -24,6 +24,13 @@ router.get(
   PrescriptionController.myPrescriptions,
 );
 
+// GET | "/api/v1/prescriptions/:appointmentId" | Get prescription by appointment ID
+router.get(
+  "/:appointmentId",
+  checkAuth(UserRole.PATIENT, UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PrescriptionController.getPrescriptionByAppointmentId,
+);
+
 // POST | "/api/v1/prescriptions" | Create a new prescription for an appointment
 router.post(
   "/",
