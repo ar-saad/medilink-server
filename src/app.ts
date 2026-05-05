@@ -19,6 +19,9 @@ const app: Application = express();
 // Parser to handle nested query parameters using qs library
 app.set("query parser", (str: string) => qs.parse(str));
 
+// Trust proxy for Vercel/Production
+app.set("trust proxy", true);
+
 // Set EJS as the view engine and configure views directory
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), "src/app/templates"));

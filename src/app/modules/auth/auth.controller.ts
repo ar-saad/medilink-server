@@ -234,7 +234,9 @@ const googleLoginSuccess = asyncHandler(async (req: Request, res: Response) => {
   // Get the redirect path again from query params (sent by better-auth after successful login)
   const redirectPath = (req.query.redirect as string) || "/dashboard";
 
-  const sessionToken = req.cookies["better-auth.session_token"];
+  const sessionToken =
+    req.cookies["better-auth.session_token"] ||
+    req.cookies["__Secure-better-auth.session_token"];
 
   if (!sessionToken) {
     return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);

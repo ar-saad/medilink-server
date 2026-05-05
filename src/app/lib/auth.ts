@@ -153,7 +153,8 @@ export const auth = betterAuth({
   ],
 
   advanced: {
-    useSecureCookies: false,
+    useSecureCookies: env.NODE_ENV === "production",
+    trustHost: true,
     cookies: {
       state: {
         attributes: {
