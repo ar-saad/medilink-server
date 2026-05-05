@@ -21,9 +21,9 @@ const registerPatient = asyncHandler(async (req: Request, res: Response) => {
   const { accessToken, refreshToken, token, ...rest } = result;
 
   // Set tokens in cookie
-  tokenUtils.setAccessTokenCookie(res, accessToken);
-  tokenUtils.setRefreshTokenCookie(res, refreshToken);
-  tokenUtils.setBetterAuthSessionCookie(res, token as string);
+  if (accessToken) tokenUtils.setAccessTokenCookie(res, accessToken);
+  if (refreshToken) tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  if (token) tokenUtils.setBetterAuthSessionCookie(res, token as string);
 
   sendResponse(res, {
     statusCode: status.CREATED,
@@ -51,9 +51,9 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { accessToken, refreshToken, token, ...rest } = result;
 
   // Set tokens in cookie
-  tokenUtils.setAccessTokenCookie(res, accessToken);
-  tokenUtils.setRefreshTokenCookie(res, refreshToken);
-  tokenUtils.setBetterAuthSessionCookie(res, token);
+  if (accessToken) tokenUtils.setAccessTokenCookie(res, accessToken);
+  if (refreshToken) tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  if (token) tokenUtils.setBetterAuthSessionCookie(res, token);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -176,12 +176,25 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
 const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
-  await AuthService.verifyEmail(email, otp);
+  const result = await AuthService.verifyEmail(email, otp);
+
+  const { accessToken, refreshToken, token, ...rest } = result;
+
+  // Set tokens in cookie
+  if (accessToken) tokenUtils.setAccessTokenCookie(res, accessToken);
+  if (refreshToken) tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  if (token) tokenUtils.setBetterAuthSessionCookie(res, token as string);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Email verified successfully",
+    data: {
+      token,
+      accessToken,
+      refreshToken,
+      ...rest,
+    },
   });
 });
 

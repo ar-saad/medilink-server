@@ -2,11 +2,13 @@ import { JwtPayload } from "jsonwebtoken";
 import { UserStatus } from "../../../generated/prisma/enums";
 import { env } from "../../config/env";
 import {
+  AppError,
   BadRequestError,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
 } from "../../errorHelpers/AppError";
+
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { TRequestUser } from "../../types/requestUser.type";
@@ -23,15 +25,23 @@ import {
 const registerPatient = async (payload: TRegisterPatientPayload) => {
   const { name, email, password } = payload;
 
-  const data = await auth.api.signUpEmail({
-    body: {
-      name,
-      email,
-      password,
-    },
-  });
+  let authData;
+  try {
+    authData = await auth.api.signUpEmail({
+      body: {
+        name,
+        email,
+        password,
+      },
+    });
+  } catch (error: any) {
+    if (error.code === "USER_ALREADY_EXISTS") {
+      throw new BadRequestError("User with this email already exists");
+    }
+    throw new BadRequestError(error.message || "Failed to register user");
+  }
 
-  if (!data.user) {
+  if (!authData || !authData.user) {
     throw new BadRequestError("Failed to register user");
   }
 
@@ -39,7 +49,7 @@ const registerPatient = async (payload: TRegisterPatientPayload) => {
     const patient = await prisma.$transaction(async (tx) => {
       const patientTx = await tx.patient.create({
         data: {
-          userId: data.user.id,
+          userId: authData.user.id,
           name: payload.name,
           email: payload.email,
         },
@@ -47,6 +57,71 @@ const registerPatient = async (payload: TRegisterPatientPayload) => {
 
       return patientTx;
     });
+
+    const tokenCreationPayload = {
+      userId: authData.user.id,
+      name: authData.user.name,
+      email: authData.user.email,
+      emailVerified: authData.user.emailVerified,
+      role: authData.user.role,
+      status: authData.user.status,
+      isDeleted: authData.user.isDeleted,
+    };
+
+    // Only generate tokens if email is already verified
+    // (This usually won't happen for patients on registration if requireEmailVerification is true)
+    let accessToken;
+    let refreshToken;
+
+    if (authData.user.emailVerified) {
+      accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
+      refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
+    }
+
+    return {
+      ...authData,
+      token: (authData as any).session?.token || (authData as any).token,
+      accessToken,
+      refreshToken,
+      patient,
+    };
+  } catch (error: any) {
+    console.log("Transaction error: ", error);
+    await prisma.user.delete({
+      where: {
+        id: authData.user.id,
+      },
+    });
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw error;
+  }
+};
+
+// POST | "/api/v1/auth/login" | Login user
+const loginUser = async (payload: TLoginUserPayload) => {
+  const { email, password } = payload;
+
+  try {
+    const data = await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
+    });
+
+    if (data.user.status === UserStatus.BLOCKED) {
+      throw new ForbiddenError(
+        "Your account has been blocked. Please contact support.",
+      );
+    }
+
+    if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
+      throw new ForbiddenError(
+        "Your account has been deleted. Please contact support.",
+      );
+    }
 
     const tokenCreationPayload = {
       userId: data.user.id,
@@ -66,61 +141,26 @@ const registerPatient = async (payload: TRegisterPatientPayload) => {
 
     return {
       ...data,
+      token: (data as any).session?.token || (data as any).token,
       accessToken,
       refreshToken,
-      patient,
     };
-  } catch (error) {
-    console.log("Transaction error: ", error);
-    await prisma.user.delete({
-      where: {
-        id: data.user.id,
-      },
-    });
-    throw error;
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    // Better-auth error codes for invalid credentials
+    if (
+      error.code === "INVALID_EMAIL_OR_PASSWORD" ||
+      error.message?.includes("invalid") ||
+      error.message?.includes("credentials")
+    ) {
+      throw new UnauthorizedError("Invalid email or password");
+    }
+
+    throw new UnauthorizedError(error.message || "Login failed");
   }
-};
-
-// POST | "/api/v1/auth/login" | Login user
-const loginUser = async (payload: TLoginUserPayload) => {
-  const { email, password } = payload;
-
-  const data = await auth.api.signInEmail({
-    body: {
-      email,
-      password,
-    },
-  });
-
-  if (data.user.status === UserStatus.BLOCKED) {
-    throw new ForbiddenError(
-      "Your account has been blocked. Please contact support.",
-    );
-  }
-
-  if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
-    throw new ForbiddenError(
-      "Your account has been deleted. Please contact support.",
-    );
-  }
-
-  const tokenCreationPayload = {
-    userId: data.user.id,
-    name: data.user.name,
-    email: data.user.email,
-    emailVerified: data.user.emailVerified,
-    role: data.user.role,
-    status: data.user.status,
-    isDeleted: data.user.isDeleted,
-  };
-
-  // Generate access token
-  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
-
-  // Generate refresh token
-  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
-
-  return { ...data, accessToken, refreshToken };
 };
 
 // GET | "/api/v1/auth/me" | Get current user details
@@ -305,6 +345,29 @@ const verifyEmail = async (email: string, otp: string) => {
       },
     });
   }
+
+  const tokenCreationPayload = {
+    userId: result.user.id,
+    name: result.user.name,
+    email: result.user.email,
+    emailVerified: true,
+    role: result.user.role,
+    status: result.user.status,
+    isDeleted: result.user.isDeleted,
+  };
+
+  // Generate access token
+  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
+
+  // Generate refresh token
+  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
+
+  return {
+    ...result,
+    token: (result as any).session?.token || (result as any).token,
+    accessToken,
+    refreshToken,
+  };
 };
 
 // POST | "/api/v1/auth/forget-password" | Send OTP to user email for password reset
