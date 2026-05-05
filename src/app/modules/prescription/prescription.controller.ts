@@ -36,8 +36,9 @@ const myPrescriptions = asyncHandler(async (req: Request, res: Response) => {
 const getPrescriptionByAppointmentId = asyncHandler(
   async (req: Request, res: Response) => {
     const { appointmentId } = req.params;
-    const result =
-      await PrescriptionService.getPrescriptionByAppointmentId(appointmentId);
+    const result = await PrescriptionService.getPrescriptionByAppointmentId(
+      appointmentId as string,
+    );
 
     sendResponse(res, {
       statusCode: status.OK,
