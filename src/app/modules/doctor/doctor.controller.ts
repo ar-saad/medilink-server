@@ -38,14 +38,6 @@ const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body as TUpdateDoctorPayload;
 
-  const files = req.files as {
-    [fieldname: string]: Express.Multer.File[] | undefined;
-  };
-
-  if (files?.profilePhoto?.[0]) {
-    payload.profilePhoto = files.profilePhoto[0].path;
-  }
-
   const updatedDoctor = await DoctorService.updateDoctor(id as string, payload);
 
   sendResponse(res, {

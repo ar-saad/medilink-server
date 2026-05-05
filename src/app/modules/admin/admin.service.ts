@@ -49,23 +49,11 @@ const updateAdmin = async (id: string, payload: TUpdateAdminPayload) => {
     throw new NotFoundError("Admin Or Super Admin not found");
   }
 
-  const updatedAdmin = await prisma.$transaction(async (tx) => {
-    const admin = await tx.admin.update({
-      where: { id },
-      data: payload,
-    });
-
-    if (payload.name || payload.profilePhoto) {
-      await tx.user.update({
-        where: { id: admin.userId },
-        data: {
-          name: payload.name || admin.name,
-          image: payload.profilePhoto || admin.profilePhoto,
-        },
-      });
-    }
-
-    return admin;
+  const updatedAdmin = await prisma.admin.update({
+    where: {
+      id,
+    },
+    data: payload,
   });
 
   return updatedAdmin;
