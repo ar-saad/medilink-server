@@ -9,7 +9,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./app/lib/auth";
 import { env } from "./app/config/env";
 import qs from "qs";
-import { PaymentRouter } from "./app/modules/payment/payment.router";
+import { PaymentController } from "./app/modules/payment/payment.controller";
 import cron from "node-cron";
 import { AppointmentService } from "./app/modules/appointment/appointment.service";
 import { requestLogger } from "./app/middlewares/requestLogger";
@@ -23,8 +23,12 @@ app.set("query parser", (str: string) => qs.parse(str));
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), "src/app/templates"));
 
-// Stripe webhook route must be registered before express.json()
-app.use("/api/v1/payments", PaymentRouter);
+// Stripe webhook route
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  PaymentController.handleStripeWebhookEvent,
+);
 
 // CORS configuration
 app.use(
