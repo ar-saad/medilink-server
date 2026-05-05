@@ -114,8 +114,7 @@ const bookAppointment = async (
         appointmentId: appointmentData.id,
         paymentId: paymentData.id,
       },
-      success_url: `${env.FRONTEND_URL}/dashboard/payment/payment-success?appointment_id=${appointmentData.id}&payment_id=${paymentData.id}`,
-      // cancel_url: `${env.FRONTEND_URL}/dashboard/payment/payment-failed`,
+      success_url: `${env.FRONTEND_URL}/payment/success?appointment_id=${appointmentData.id}&payment_id=${paymentData.id}`,
       cancel_url: `${env.FRONTEND_URL}/dashboard/appointments?error=payment_cancelled`,
     });
 
@@ -460,9 +459,8 @@ const initiatePayment = async (appointmentId: string, user: TRequestUser) => {
       appointmentId: appointmentData.id,
       paymentId: appointmentData.payment.id,
     },
-    success_url: `${env.FRONTEND_URL}/dashboard/payment/payment-success`,
-    // cancel_url: `${env.FRONTEND_URL}/dashboard/payment/payment-failed`,
-    cancel_url: `${env.FRONTEND_URL}/dashboard/appointments`,
+    success_url: `${env.FRONTEND_URL}/payment/success?appointment_id=${appointmentData.id}&payment_id=${appointmentData.payment.id}`,
+    cancel_url: `${env.FRONTEND_URL}/dashboard/appointments?error=payment_cancelled`,
   });
 
   return {
