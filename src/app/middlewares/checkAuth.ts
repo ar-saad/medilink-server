@@ -103,6 +103,15 @@ export const checkAuth =
         );
       }
 
+      // Populate req.user from access token if not already populated from session
+      if (!req.user && verifiedToken.data) {
+        req.user = {
+          id: verifiedToken.data.userId as string,
+          role: verifiedToken.data.role as UserRole,
+          email: verifiedToken.data.email as string,
+        };
+      }
+
       if (
         userRoles.length > 0 &&
         !userRoles.includes(verifiedToken.data!.role as UserRole)
