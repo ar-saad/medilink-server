@@ -112,7 +112,11 @@ export const auth = betterAuth({
               },
             });
           }
-        } else if (type === "forget-password") {
+        } else if (
+          (type as string) === "forget-password" ||
+          (type as string) === "forgot-password" ||
+          (type as string) === "reset-password"
+        ) {
           const user = await prisma.user.findUnique({
             where: { email },
           });

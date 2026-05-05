@@ -3,7 +3,12 @@ import { AuthController } from "./auth.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { loginSchema, registerPatientSchema } from "./auth.schema";
+import {
+  loginSchema,
+  registerPatientSchema,
+  resendOTPSchema,
+  verifyEmailSchema,
+} from "./auth.schema";
 
 const router = Router();
 
@@ -57,7 +62,18 @@ router.post(
 );
 
 // POST | "/api/v1/auth/verify-email" | Verify user email
-router.post("/verify-email", AuthController.verifyEmail);
+router.post(
+  "/verify-email",
+  validateRequest(verifyEmailSchema),
+  AuthController.verifyEmail,
+);
+
+// POST | "/api/v1/auth/resend-verification-otp" | Resend OTP to user email for verification
+router.post(
+  "/resend-verification-otp",
+  validateRequest(resendOTPSchema),
+  AuthController.resendVerificationOTP,
+);
 
 // POST | "/api/v1/auth/forget-password" | Send OTP to user email for password reset
 router.post("/forget-password", AuthController.forgetPassword);

@@ -375,21 +375,75 @@ const resetPassword = async (
   });
 
   // Update needPasswordChange field to false after successful password reset
-  if (isUserExists.needPasswordChange) {
-    await prisma.user.update({
-      where: {
-        id: isUserExists.id,
-      },
-      data: {
-        needPasswordChange: false,
-      },
-    });
-  }
+  await prisma.user.update({
+    where: {
+      id: isUserExists.id,
+    },
+    data: {
+      needPasswordChange: false,
+    },
+  });
 
   // Invalidate all existing sessions for the user after password reset
   await prisma.session.deleteMany({
     where: {
       userId: isUserExists.id,
+    },
+  });
+
+  // Automatically log the user in after password reset to get new tokens
+  const data = await auth.api.signInEmail({
+    body: {
+      email,
+      password: newPassword,
+    },
+  });
+
+  const tokenCreationPayload = {
+    userId: data.user.id,
+    name: data.user.name,
+    email: data.user.email,
+    emailVerified: data.user.emailVerified,
+    role: data.user.role,
+    status: data.user.status,
+    isDeleted: data.user.isDeleted,
+  };
+
+  // Generate new access and refresh tokens
+  const accessToken = tokenUtils.createAccessToken(tokenCreationPayload);
+  const refreshToken = tokenUtils.createRefreshToken(tokenCreationPayload);
+
+  return {
+    ...data,
+    accessToken,
+    refreshToken,
+  };
+};
+
+// POST | "/api/v1/auth/resend-verification-otp" | Resend OTP to user email for verification
+const resendVerificationOTP = async (email: string) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!isUserExists) {
+    throw new NotFoundError("User with this email does not exist");
+  }
+
+  if (isUserExists.emailVerified) {
+    throw new BadRequestError("Email is already verified");
+  }
+
+  if (isUserExists.isDeleted || isUserExists.status === UserStatus.BLOCKED) {
+    throw new BadRequestError("User account is deleted or inactive.");
+  }
+
+  // Send verification OTP to user email
+  await auth.api.sendVerificationEmail({
+    body: {
+      email,
     },
   });
 };
@@ -441,5 +495,6 @@ export const AuthService = {
   verifyEmail,
   forgetPassword,
   resetPassword,
+  resendVerificationOTP,
   googleLoginSuccess,
 };

@@ -202,14 +202,42 @@ const forgetPassword = asyncHandler(async (req: Request, res: Response) => {
 const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   const { email, otp, newPassword } = req.body;
 
-  await AuthService.resetPassword(email, otp, newPassword);
+  const result = await AuthService.resetPassword(email, otp, newPassword);
+
+  const { accessToken, refreshToken, token, ...rest } = result;
+
+  // Set tokens in cookie
+  tokenUtils.setAccessTokenCookie(res, accessToken);
+  tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  tokenUtils.setBetterAuthSessionCookie(res, token);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Password reset successfully",
+    data: {
+      token,
+      accessToken,
+      refreshToken,
+      ...rest,
+    },
   });
 });
+
+// POST | "/api/v1/auth/resend-verification-otp" | Resend OTP to user email for verification
+const resendVerificationOTP = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    await AuthService.resendVerificationOTP(email);
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "Verification OTP resent to email successfully",
+    });
+  },
+);
 
 // GET | "/api/v1/auth/login/google" | Google OAuth login
 const googleLogin = asyncHandler(async (req: Request, res: Response) => {
@@ -290,6 +318,7 @@ export const AuthController = {
   verifyEmail,
   forgetPassword,
   resetPassword,
+  resendVerificationOTP,
   googleLogin,
   googleLoginSuccess,
   handleOAuthError,
