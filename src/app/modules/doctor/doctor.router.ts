@@ -4,6 +4,7 @@ import { validateRequest } from "../../middlewares/validateRequest";
 import { updateDoctorSchema } from "./doctor.schema";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
+import { multerUpload } from "../../config/multer.config";
 
 const router: Router = Router();
 
@@ -15,6 +16,7 @@ router.get("/:id", DoctorController.getDoctorById);
 router.patch(
   "/:id",
   checkAuth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  multerUpload.single("profilePhoto"),
   validateRequest(updateDoctorSchema),
   DoctorController.updateDoctor,
 );

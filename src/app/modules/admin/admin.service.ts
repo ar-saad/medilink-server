@@ -49,14 +49,29 @@ const updateAdmin = async (id: string, payload: TUpdateAdminPayload) => {
     throw new NotFoundError("Admin Or Super Admin not found");
   }
 
-  const updatedAdmin = await prisma.admin.update({
-    where: {
-      id,
-    },
-    data: payload,
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedAdmin = await tx.admin.update({
+      where: {
+        id,
+      },
+      data: payload,
+    });
+
+    // Update user basic information to keep in sync
+    if (payload.name || payload.profilePhoto) {
+      await tx.user.update({
+        where: { id: isAdminExist.userId },
+        data: {
+          name: payload.name || isAdminExist.name,
+          image: payload.profilePhoto || isAdminExist.profilePhoto,
+        },
+      });
+    }
+
+    return updatedAdmin;
   });
 
-  return updatedAdmin;
+  return result;
 };
 
 // PATCH | "/api/v1/admins/change-user-status" | Change user status (BLOCKED or ACTIVE)

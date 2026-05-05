@@ -98,14 +98,18 @@ const updateDoctor = async (id: string, payload: TUpdateDoctorPayload) => {
     await tx.doctor.update({
       where: { id },
       data: doctorData,
-      include: {
-        specialties: {
-          include: {
-            specialty: true,
-          },
-        },
-      },
     });
+
+    // Update user basic information to keep in sync
+    if (doctorData.name || doctorData.profilePhoto) {
+      await tx.user.update({
+        where: { id: existingDoctor.userId },
+        data: {
+          name: doctorData.name || existingDoctor.name,
+          image: doctorData.profilePhoto || existingDoctor.profilePhoto,
+        },
+      });
+    }
 
     // If specialties are provided, update them separately
     if (specialties && specialties.length > 0) {

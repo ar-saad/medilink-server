@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
+import { multerUpload } from "../../config/multer.config";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { AdminController } from "./admin.controller";
 import { updateAdminSchema } from "./admin.schema";
@@ -39,6 +40,7 @@ router.get(
 router.patch(
   "/:id",
   checkAuth(UserRole.SUPER_ADMIN),
+  multerUpload.single("profilePhoto"),
   validateRequest(updateAdminSchema),
   AdminController.updateAdmin,
 );

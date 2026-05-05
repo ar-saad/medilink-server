@@ -37,6 +37,9 @@ const getDoctorById = asyncHandler(async (req: Request, res: Response) => {
 const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body as TUpdateDoctorPayload;
+  if (req.file) {
+    payload.profilePhoto = req.file.path;
+  }
 
   const updatedDoctor = await DoctorService.updateDoctor(id as string, payload);
 

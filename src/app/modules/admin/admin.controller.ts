@@ -39,6 +39,9 @@ const getAdminById = asyncHandler(async (req: Request, res: Response) => {
 const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
+  if (req.file) {
+    payload.profilePhoto = req.file.path;
+  }
 
   const updatedAdmin = await AdminService.updateAdmin(id as string, payload);
 
